@@ -2,9 +2,11 @@ package bin
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
+	"io"
 )
 
 type Reader struct {
@@ -49,7 +51,7 @@ func (r *Reader) ReadUint32() (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-	return uint32(data[0])<<24 | uint32(data[1])<<16 | uint32(data[2])<<8 | uint32(data[3]), nil
+	return binary.BigEndian.Uint32(data[:]), nil
 }
 
 func (r *Reader) ReadBytes(size int) ([]byte, error) {
@@ -85,6 +87,10 @@ func (r *Reader) ReadString(size int) (string, error) {
 func (r *Reader) ReadStringAll() (string, error) {
 	remaining := r.Remaining()
 	return r.ReadString(remaining)
+}
+
+func (r *Reader) ReadAll() ([]byte, error) {
+	return io.ReadAll(r.reader)
 }
 
 // Remaining returns the number of remaining bytes to read

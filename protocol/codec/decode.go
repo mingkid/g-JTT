@@ -3,6 +3,7 @@ package codec
 import (
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -22,9 +23,13 @@ func (d *Decoder) Decode(msg interface{}, b []byte) error {
 
 	msgValue := reflect.ValueOf(msg).Elem()
 
+	return d.decodeStruct(msgType.Elem(), msgValue, reader)
+}
+
+func (d *Decoder) decodeStruct(msgType reflect.Type, msgValue reflect.Value, reader *bin.Reader) error {
 	// Iterate through the fields of the struct
-	for i := 0; i < msgType.Elem().NumField(); i++ {
-		fieldType := msgType.Elem().Field(i)
+	for i := 0; i < msgType.NumField(); i++ {
+		fieldType := msgType.Field(i)
 		fieldValue := msgValue.Field(i)
 
 		tagValue := fieldType.Tag.Get("jtt13") // Change to the appropriate tag
@@ -35,7 +40,7 @@ func (d *Decoder) Decode(msg interface{}, b []byte) error {
 
 		switch fieldType.Type.Kind() {
 		case reflect.Struct:
-			if err := d.Decode(fieldValue.Addr().Interface(), b); err != nil {
+			if err := d.decodeStruct(fieldType.Type, fieldValue, reader); err != nil {
 				return err
 			}
 
@@ -59,6 +64,54 @@ func (d *Decoder) Decode(msg interface{}, b []byte) error {
 				return err
 			}
 			fieldValue.SetUint(uint64(val))
+
+		case reflect.Slice:
+			if fieldType.Type.Elem().Kind() == reflect.Uint8 {
+				if tagValue == "" {
+					// Read remaining data
+					val, err := reader.ReadAll()
+					if err != nil {
+						return err
+					}
+					fieldValue.SetBytes(val)
+				} else if tagValue != "-" {
+					if parts := splitTag(tagValue); len(parts) == 2 && parts[0] == "raw" {
+						size, _ := strconv.Atoi(parts[1])
+						val, err := reader.ReadBytes(size)
+						if err != nil {
+							return err
+						}
+						fieldValue.SetBytes(val)
+					}
+				}
+			}
+
+		case reflect.Map:
+			if fieldType.Type.Elem().Kind() == reflect.Slice && fieldType.Type.Elem().Elem().Kind() == reflect.Uint8 {
+				mapValue := reflect.MakeMap(fieldType.Type)
+				for {
+					key, err := reader.ReadByte()
+					if err != nil {
+						if err == io.EOF {
+							break
+						}
+						return err
+					}
+
+					size, err := reader.ReadByte()
+					if err != nil {
+						return err
+					}
+
+					val, err := reader.ReadBytes(int(size))
+					if err != nil {
+						return err
+					}
+
+					mapValue.SetMapIndex(reflect.ValueOf(uint8(key)), reflect.ValueOf(val))
+				}
+				fieldValue.Set(mapValue)
+			}
 
 		case reflect.String:
 			if tagValue == "" {
