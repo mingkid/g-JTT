@@ -17,8 +17,8 @@ func TestDecodeM0200(t *testing.T) {
 	)
 	_ = decoder.Decode(&m, data)
 
-	if m.Head.MsgID != msg.TermLocationRepose {
-		t.Fatalf("消息包ID解析错误，应为%d，实际为%d", msg.TermLocationRepose, m.Head.MsgID)
+	if m.Head.MsgID != msg.MsgIDTermLocationRepose {
+		t.Fatalf("消息包ID解析错误，应为%d，实际为%d", msg.MsgIDTermLocationRepose, m.Head.MsgID)
 	}
 	if m.Head.BodyProps != 109 {
 		t.Fatalf("消息包ID解析错误，应为%d，实际为%d", 109, m.Head.BodyProps)
@@ -37,5 +37,29 @@ func TestDecodeM0200(t *testing.T) {
 	//}
 	if m.Status.GPSUsed() != true {
 		t.Fatalf("消息包ID解析错误，应为%v，实际为%v", true, m.Status.GPSUsed())
+	}
+}
+
+func TestDecodeM0001(t *testing.T) {
+	dataHex := "0001006d036240156681017101710200000000"
+	data, _ := hex.DecodeString(dataHex)
+
+	var (
+		m       msg.M0001
+		decoder Decoder
+	)
+	_ = decoder.Decode(&m, data)
+
+	if m.AnswerSerialNo != 369 {
+		t.Fatalf("应答消息序号解析错误，应为%v，实际为%v", 369, m.SN)
+	}
+	if m.Result != msg.M0001ResultOK {
+		t.Fatalf("处理结果解析错误，应为%v，实际为%v", msg.M0001ResultOK, m.Result)
+	}
+	if m.AnswerMsgID != msg.MsgIDTermLocationRepose {
+		t.Fatalf("应答消息ID解析错误，应为%v，实际为%v", msg.MsgIDTermLocationRepose, m.AnswerMsgID)
+	}
+	if m.ErrorCode != 0x0000 {
+		t.Fatalf("错误代码解析错误，应为%v，实际为%v", 0x0000, m.ErrorCode)
 	}
 }
