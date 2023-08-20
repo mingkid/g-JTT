@@ -33,7 +33,11 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 		fieldValue := structValue.Field(i)
 		fieldType := structType.Field(i)
 
-		tagValue := fieldType.Tag.Get("jtt19")
+		tagValue := fieldType.Tag.Get("jtt13")
+
+		if tagValue == "-" {
+			continue
+		}
 
 		switch fieldValue.Type().Kind() {
 		case reflect.Uint8:
@@ -74,14 +78,10 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 				}
 			}
 
-		// ...
-
 		case reflect.Struct:
-			if tagValue != "-" {
-				err := e.encodeStruct(fieldValue, writer)
-				if err != nil {
-					return err
-				}
+			err := e.encodeStruct(fieldValue, writer)
+			if err != nil {
+				return err
 			}
 
 		default:
