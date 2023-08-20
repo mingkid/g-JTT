@@ -63,3 +63,33 @@ func TestDecodeM0001(t *testing.T) {
 		t.Fatalf("错误代码解析错误，应为%v，实际为%v", 0x0000, m.ErrorCode)
 	}
 }
+
+func TestDecodeM0100(t *testing.T) {
+	var (
+		m       msg.M0100
+		decoder Decoder
+	)
+	_ = decoder.Decode(&m, []byte{1, 0, 0, 39, 1, 48, 81, 25, 38, 117, 0, 128, 0, 44, 1, 44, 55, 48, 49, 49, 49, 66, 83, 74, 45, 65, 54, 66, 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 49, 57, 50, 54, 55, 53, 0, 0, 0})
+
+	if m.ProvincialID != 44 {
+		t.Fatalf("省份 ID 解析错误，应为%d，实际为%d", 44, m.ProvincialID)
+	}
+	if m.CityID != 300 {
+		t.Fatalf("城市 ID 解析错误，应为%d，实际为%d", 300, m.CityID)
+	}
+	if m.ManufacturerID != "70111" {
+		t.Fatalf("制造商 ID 解析错误，应为%s，实际为%s", "70111", m.ManufacturerID)
+	}
+	if m.TermModel != "BSJ-A6BD" {
+		t.Fatalf("终端型号解析错误，应为%s，实际为%s", "BSJ-A6BD", m.TermModel)
+	}
+	if m.TermID != "1192675" {
+		t.Fatalf("终端 ID 解析错误，应为%s，实际为%s", "1192675", m.TermID)
+	}
+	if m.LicensePlateColor != 0 {
+		t.Fatalf("车牌颜色解析错误，应为%d，实际为%d", 0, m.LicensePlateColor)
+	}
+	if m.LicensePlate != "" {
+		t.Fatalf("车牌号码解析错误，应为%s，实际为%s", "", m.LicensePlate)
+	}
+}

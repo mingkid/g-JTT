@@ -7,6 +7,7 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"io"
+	"strings"
 )
 
 type Reader struct {
@@ -33,7 +34,7 @@ func (r *Reader) ReadUint16() (uint16, error) {
 	if err != nil {
 		return 0, err
 	}
-	return uint16(data[0])<<8 | uint16(data[1]), nil
+	return binary.BigEndian.Uint16(data[:]), nil
 }
 
 func (r *Reader) ReadBCD(length int) (string, error) {
@@ -68,20 +69,17 @@ func (r *Reader) ReadB() (byte, error) {
 }
 
 func (r *Reader) ReadString(size int) (string, error) {
-	data := make([]byte, size)
-	_, err := r.reader.Read(data)
+	sourceBuf, err := r.ReadBytes(size)
 	if err != nil {
 		return "", err
 	}
 
-	// Convert GBK encoded bytes to string
-	decoder := simplifiedchinese.GBK.NewDecoder()
-	decodedData, _, err := transform.Bytes(decoder, data)
+	targetBuf, err := io.ReadAll(transform.NewReader(bytes.NewReader(sourceBuf), simplifiedchinese.GBK.NewDecoder()))
 	if err != nil {
 		return "", err
 	}
 
-	return string(decodedData), nil
+	return strings.Trim(string(targetBuf), "\u0000"), nil
 }
 
 func (r *Reader) ReadStringAll() (string, error) {
