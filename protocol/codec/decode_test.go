@@ -93,3 +93,15 @@ func TestDecodeM0100(t *testing.T) {
 		t.Fatalf("车牌号码解析错误，应为%s，实际为%s", "", m.LicensePlate)
 	}
 }
+
+func TestDecodeM0102(t *testing.T) {
+	var (
+		m       msg.M0102
+		decoder Decoder
+	)
+	_ = decoder.Decode(&m, []byte{1, 0, 0, 39, 1, 48, 81, 25, 38, 117, 0, 128, 55, 54, 50, 54, 102, 53, 49, 57, 56, 48, 53, 51, 102, 98, 50, 99, 48, 49, 100, 100, 48, 101, 98, 101, 97, 100, 101, 54, 48, 99, 102, 51})
+
+	if m.Token != "7626f5198053fb2c01dd0ebeade60cf3" {
+		t.Fatalf("Token 解析错误，应为%s，实际为%s", "7626f5198053fb2c01dd0ebeade60cf3", m.Token)
+	}
+}

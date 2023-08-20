@@ -121,7 +121,7 @@ func (d *Decoder) decodeStruct(msgType reflect.Type, msgValue reflect.Value, rea
 					return err
 				}
 				fieldValue.SetString(val)
-			} else if tagValue != "-" {
+			} else {
 				if bcdLength := extractBCDLength(tagValue); bcdLength > 0 {
 					val, err := reader.ReadBCD(bcdLength)
 					if err != nil {

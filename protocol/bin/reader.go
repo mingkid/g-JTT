@@ -83,15 +83,9 @@ func (r *Reader) ReadString(size int) (string, error) {
 }
 
 func (r *Reader) ReadStringAll() (string, error) {
-	remaining := r.Remaining()
-	return r.ReadString(remaining)
+	return r.ReadString(r.reader.Len())
 }
 
 func (r *Reader) ReadAll() ([]byte, error) {
 	return io.ReadAll(r.reader)
-}
-
-// Remaining returns the number of remaining bytes to read
-func (r *Reader) Remaining() int {
-	return int(r.reader.Size()) - int(r.reader.Len())
 }
