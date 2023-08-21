@@ -47,10 +47,20 @@ func (c *Connection) SetExpirationByTimestamp(timestamp int64) {
 	c.expiration = time.Unix(timestamp, 0)
 }
 
+// Receive 接收数据
 func (c *Connection) Receive() ([]byte, error) {
-	return nil, nil
+	b := make([]byte, 1024)
+	n, err := c.conn.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
 }
 
-func (c *Connection) Send(data []byte) error {
+// Send 发送数据
+func (c *Connection) Send(b []byte) error {
+	if _, err := c.conn.Write(b); err != nil {
+		return err
+	}
 	return nil
 }

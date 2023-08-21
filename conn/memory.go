@@ -9,18 +9,27 @@ type MemoryConnPool struct {
 	mu          sync.RWMutex // Mutex for concurrent access
 }
 
-func (cp *MemoryConnPool) Add(terminalID string, conn *Connection) {
+func (cp *MemoryConnPool) Add(termID string, conn *Connection) {
 	cp.mu.Lock()
 	defer cp.mu.Unlock()
 
-	cp.connections[terminalID] = conn
+	cp.connections[termID] = conn
 }
 
-func (cp *MemoryConnPool) Get(terminalID string) *Connection {
+func (cp *MemoryConnPool) Get(termID string) (c *Connection, ok bool) {
 	cp.mu.RLock()
 	defer cp.mu.RUnlock()
+	cp.disconnectOnTimeout(termID)
+	c, ok = cp.connections[termID]
+	return
+}
 
-	return cp.connections[terminalID]
+func (m *MemoryConnPool) disconnectOnTimeout(sn string) {
+	if c, found := m.connections[sn]; found {
+		if c.IsExpired() {
+			delete(m.connections, sn)
+		}
+	}
 }
 
 var defaultConnPoolOnce sync.Once
