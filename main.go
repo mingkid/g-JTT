@@ -10,8 +10,9 @@ import (
 )
 
 type Engine struct {
-	connPool conn.Pool
-	handlers map[msg.MsgID][]HandleFunc
+	PhoneToTermID PhoneToTermID
+	connPool      conn.Pool
+	handlers      map[msg.MsgID][]HandleFunc
 }
 
 func New(connPool conn.Pool) *Engine {
@@ -37,41 +38,54 @@ func (e *Engine) Serve(port string) error {
 	defer listener.Close()
 
 	for {
-		c, err := listener.Accept()
+		rawConn, err := listener.Accept()
 		if err != nil {
 			// Handle accept error
 			continue
 		}
 
-		connection := conn.NewConnection(c, time.Now().Add(time.Minute)) // Adjust expiration time as needed
+		c := conn.NewConnection(rawConn, time.Now().Add(time.Minute)) // Adjust expiration time as needed
 
-		go e.handleConnection(connection)
+		go func() {
+			ctx := e.createContext(c)
+			e.processMessage(ctx, c)
+		}()
 	}
 }
 
-func (e *Engine) handleConnection(c *conn.Connection) {
+func (e *Engine) createContext(c *conn.Connection) *Context {
 	rawData, _ := c.Receive() // Adjust error handling as needed
 
-	ctx := &Context{
+	return &Context{
 		conn:    c,
 		rawData: rawData,
 	}
-
-	e.processMessage(ctx)
 }
 
-func (e *Engine) processMessage(ctx *Context) {
-	messageID := codec.ExtraMsgID(ctx.Body()) // Extract message ID
+func (e *Engine) processMessage(ctx *Context, c *conn.Connection) {
+	var (
+		msgHead msg.Head
+		decoder codec.Decoder
+	)
 
-	handlers, ok := e.handlers[messageID]
+	_ = decoder.Decode(msgHead, ctx.Data())
+
+	// 更新连接池
+	termID := e.PhoneToTermID(msgHead.Phone)
+	if _, ok := e.connPool.Get(termID); !ok {
+		e.connPool.Add(termID, c)
+	}
+
+	// 执行控制器函数
+	handlers, ok := e.handlers[msgHead.MsgID]
 	if !ok {
 		// Handle unknown message ID
 		return
 	}
-
 	for _, handler := range handlers {
 		handler(ctx)
 	}
 }
 
 type HandleFunc func(ctx *Context)
+type PhoneToTermID func(phone string) (termID string)

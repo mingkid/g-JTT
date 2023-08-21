@@ -32,7 +32,7 @@ func main() {
 	engine := jtt.Default()
 
 	// Register message handlers
-	engine.RegisterHandler(msg.MsgIDTermLocationRepose, handleMessage)
+	engine.RegisterHandler(msg.MsgIDTermLocationReport, handleMessage)
 
 	// Start the communication server
 	_ = engine.Serve(":8080")
@@ -44,7 +44,7 @@ func handleMessage(ctx *jtt.Context) {
 		d codec.Decoder
 	)
 
-	_ = d.Decode(&m, ctx.Body())
+	_ = d.Decode(&m, ctx.Data())
 	fmt.Printf("Hello, %s", msg.Head.Phone)
 }
 ```

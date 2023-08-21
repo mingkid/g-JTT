@@ -11,7 +11,7 @@ type Context struct {
 	rawData []byte
 }
 
-func (ctx *Context) Body() []byte {
+func (ctx *Context) Data() []byte {
 	return ctx.rawData
 }
 

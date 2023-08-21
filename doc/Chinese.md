@@ -47,7 +47,7 @@ func handleMessage(ctx *jtt.Context) {
 		decoder codec.Decoder
 	)
 
-	decoder.Decode(&msg, ctx.Body())
+	decoder.Decode(&msg, ctx.Data())
 	fmt.Printf("Hello, %s", msg.Head.Phone)
 }
 ```
