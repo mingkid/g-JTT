@@ -16,7 +16,7 @@ func TestDecodeM8001(t *testing.T) {
 			SN:    123,
 		},
 		SerialNumber: 321,
-		MsgID:        msg.MsgIDTermLocationRepose,
+		MsgID:        msg.MsgIDTermLocationReport,
 		Result:       msg.M8001ResultFail,
 	}
 

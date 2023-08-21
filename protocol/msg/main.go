@@ -17,8 +17,8 @@ const (
 	// MsgIDTermRegResp 终端注册应答
 	MsgIDTermRegResp = 0x8100
 
-	// MsgIDTermLocationRepose 终端位置汇报
-	MsgIDTermLocationRepose = 0x0200
+	// MsgIDTermLocationReport 终端位置汇报
+	MsgIDTermLocationReport = 0x0200
 
 	// MsgIDTermLocationBatch 终端位置批量上传
 	MsgIDTermLocationBatch = 0x0704

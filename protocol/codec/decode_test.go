@@ -17,8 +17,8 @@ func TestDecodeM0200(t *testing.T) {
 	)
 	_ = decoder.Decode(&m, data)
 
-	if m.Head.MsgID != msg.MsgIDTermLocationRepose {
-		t.Fatalf("消息包ID解析错误，应为%d，实际为%d", msg.MsgIDTermLocationRepose, m.Head.MsgID)
+	if m.Head.MsgID != msg.MsgIDTermLocationReport {
+		t.Fatalf("消息包ID解析错误，应为%d，实际为%d", msg.MsgIDTermLocationReport, m.Head.MsgID)
 	}
 	if m.Head.BodyProps != 109 {
 		t.Fatalf("消息包ID解析错误，应为%d，实际为%d", 109, m.Head.BodyProps)
@@ -56,8 +56,8 @@ func TestDecodeM0001(t *testing.T) {
 	if m.Result != msg.M0001ResultOK {
 		t.Fatalf("处理结果解析错误，应为%v，实际为%v", msg.M0001ResultOK, m.Result)
 	}
-	if m.AnswerMsgID != msg.MsgIDTermLocationRepose {
-		t.Fatalf("应答消息ID解析错误，应为%v，实际为%v", msg.MsgIDTermLocationRepose, m.AnswerMsgID)
+	if m.AnswerMsgID != msg.MsgIDTermLocationReport {
+		t.Fatalf("应答消息ID解析错误，应为%v，实际为%v", msg.MsgIDTermLocationReport, m.AnswerMsgID)
 	}
 	if m.ErrorCode != 0x0000 {
 		t.Fatalf("错误代码解析错误，应为%v，实际为%v", 0x0000, m.ErrorCode)
