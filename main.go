@@ -37,8 +37,8 @@ func (e *Engine) RegisterHandler(messageID msg.MsgID, handler HandleFunc) {
 	e.handlers[messageID] = append(e.handlers[messageID], handler)
 }
 
-func (e *Engine) Serve(port string) error {
-	listener, err := net.Listen("tcp", port)
+func (e *Engine) Serve(ip string, port uint) error {
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
 		return err
 	}
