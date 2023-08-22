@@ -2,7 +2,7 @@ package bin
 
 import (
 	"encoding/binary"
-	"gihub.com/mingkid/g-jtt/protocol/msg"
+	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
 // ExtractMsgID 提取消息 ID

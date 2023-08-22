@@ -3,7 +3,7 @@ package codec
 import (
 	"encoding/hex"
 	"fmt"
-	"gihub.com/mingkid/g-jtt/protocol/msg"
+	"github.com/mingkid/g-jtt/protocol/msg"
 	"testing"
 )
 

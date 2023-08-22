@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"gihub.com/mingkid/g-jtt/protocol/msg"
+	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
 func TestDecodeM0200(t *testing.T) {

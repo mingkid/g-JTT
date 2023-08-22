@@ -2,7 +2,7 @@ package codec
 
 import (
 	"fmt"
-	"gihub.com/mingkid/g-jtt/protocol/bin"
+	"github.com/mingkid/g-jtt/protocol/bin"
 	"reflect"
 	"strconv"
 	"strings"

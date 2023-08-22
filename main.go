@@ -4,9 +4,9 @@ import (
 	"net"
 	"time"
 
-	"gihub.com/mingkid/g-jtt/conn"
-	"gihub.com/mingkid/g-jtt/protocol/codec"
-	"gihub.com/mingkid/g-jtt/protocol/msg"
+	"github.com/mingkid/g-jtt/conn"
+	"github.com/mingkid/g-jtt/protocol/codec"
+	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
 type Engine struct {

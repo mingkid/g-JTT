@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gihub.com/mingkid/g-jtt/protocol/bin"
+	"github.com/mingkid/g-jtt/protocol/bin"
 )
 
 type Decoder struct{}
