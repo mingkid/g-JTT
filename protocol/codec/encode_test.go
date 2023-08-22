@@ -15,9 +15,9 @@ func TestDecodeM8001(t *testing.T) {
 			Phone: "13680179679",
 			SN:    123,
 		},
-		SerialNumber: 321,
-		MsgID:        msg.MsgIDTermLocationReport,
-		Result:       msg.M8001ResultFail,
+		AnswerSerialNo: 321,
+		AnswerMsgID:    msg.MsgIDTermLocationReport,
+		Result:         msg.M8001ResultFail,
 	}
 
 	b, _ := e.Encode(m)
