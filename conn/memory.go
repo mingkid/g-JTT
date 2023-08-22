@@ -9,6 +9,7 @@ type MemoryConnPool struct {
 	mu          sync.RWMutex // Mutex for concurrent access
 }
 
+// Add 添加终端 ID 对应的连接对象
 func (cp *MemoryConnPool) Add(termID string, conn *Connection) {
 	cp.mu.Lock()
 	defer cp.mu.Unlock()
@@ -16,6 +17,7 @@ func (cp *MemoryConnPool) Add(termID string, conn *Connection) {
 	cp.connections[termID] = conn
 }
 
+// Get 返回终端 ID 对应的连接对象
 func (cp *MemoryConnPool) Get(termID string) (c *Connection, ok bool) {
 	cp.mu.RLock()
 	defer cp.mu.RUnlock()
@@ -35,6 +37,7 @@ func (m *MemoryConnPool) disconnectOnTimeout(sn string) {
 var defaultConnPoolOnce sync.Once
 var defaultConnPool Pool
 
+// DefaultConnPool 返回默认连接池
 func DefaultConnPool() Pool {
 	defaultConnPoolOnce.Do(func() {
 		defaultConnPool = &MemoryConnPool{connections: make(map[string]*Connection)}

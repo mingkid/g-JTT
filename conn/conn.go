@@ -19,6 +19,7 @@ func NewConnection(conn net.Conn, expiration time.Time) *Connection {
 	}
 }
 
+// IsExpired 返回是否过期
 func (c *Connection) IsExpired() bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -26,6 +27,7 @@ func (c *Connection) IsExpired() bool {
 	return time.Now().After(c.expiration)
 }
 
+// SetExpiration 设置到期时间
 func (c *Connection) SetExpiration(expiration time.Time) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -33,6 +35,7 @@ func (c *Connection) SetExpiration(expiration time.Time) {
 	c.expiration = expiration
 }
 
+// SetExpirationByDuration 设置连接还有多久就过期
 func (c *Connection) SetExpirationByDuration(duration time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -40,6 +43,7 @@ func (c *Connection) SetExpirationByDuration(duration time.Duration) {
 	c.expiration = time.Now().Add(duration)
 }
 
+// SetExpirationByTimestamp 设置到期时间戳
 func (c *Connection) SetExpirationByTimestamp(timestamp int64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -51,10 +55,7 @@ func (c *Connection) SetExpirationByTimestamp(timestamp int64) {
 func (c *Connection) Receive() ([]byte, error) {
 	b := make([]byte, 1024)
 	n, err := c.conn.Read(b)
-	if err != nil {
-		return nil, err
-	}
-	return b[:n], nil
+	return b[:n], err
 }
 
 // Send 发送数据
