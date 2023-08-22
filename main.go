@@ -22,8 +22,12 @@ func New(connPool conn.Pool) *Engine {
 	}
 }
 
-func Default() *Engine {
-	return New(conn.DefaultConnPool())
+func Default() (e *Engine) {
+	e = New(conn.DefaultConnPool())
+	e.PhoneToTermID = func(phone string) (termID string) {
+		return phone
+	}
+	return
 }
 
 func (e *Engine) RegisterHandler(messageID msg.MsgID, handler HandleFunc) {
