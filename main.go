@@ -74,6 +74,8 @@ func (e *Engine) processMessage(ctx *Context, c *conn.Connection) {
 
 	_ = decoder.Decode(msgHead, ctx.Data())
 
+	ctx.head = msgHead
+
 	// 更新连接池
 	termID := e.PhoneToTermID(msgHead.Phone)
 	if _, ok := e.connPool.Get(termID); !ok {

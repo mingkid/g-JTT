@@ -1,6 +1,8 @@
 package jtt
 
 import (
+	"net"
+
 	"github.com/mingkid/g-jtt/conn"
 	"github.com/mingkid/g-jtt/protocol/codec"
 	"github.com/mingkid/g-jtt/protocol/msg"
@@ -8,6 +10,7 @@ import (
 
 type Context struct {
 	c       *conn.Connection
+	head    msg.Head
 	rawData []byte
 }
 
@@ -16,16 +19,24 @@ func (ctx *Context) Data() []byte {
 }
 
 // RemoteAddr 返回远程网络地址（如果知道）
-func (ctx *Context) RemoteAddr() Addr {
+func (ctx *Context) RemoteAddr() net.Addr {
 	return ctx.c.RemoteAddr()
 }
 
+// Generic 返回平台通用响应
 func (ctx *Context) Generic(res msg.M8001Result) error {
-	var (
-		msg     msg.M8001
-		encoder codec.Encoder
-	)
-	b, err := encoder.Encode(msg)
+	m := msg.M8001{
+		Head: msg.Head{
+			MsgID: msg.MsgIDPlatformCommResp,
+			Phone: ctx.head.Phone,
+		},
+		AnswerSerialNo: ctx.head.SN,
+		AnswerMsgID:    ctx.head.MsgID,
+		Result:         res,
+	}
+
+	e := new(codec.Encoder)
+	b, err := e.Encode(m)
 	if err != nil {
 		return err
 	}
