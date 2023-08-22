@@ -9,9 +9,15 @@ import (
 )
 
 type Context struct {
-	c       *conn.Connection
-	head    msg.Head
-	rawData []byte
+	c       *conn.Connection // 连接
+	head    msg.Head         // 消息头
+	rawData []byte           // 终端原始数据
+	termID  string           // 终端 ID
+}
+
+// TermID 返回请求终端的 ID
+func (ctx *Context) TermID() string {
+	return ctx.termID
 }
 
 // Head 返回终端请求消息头

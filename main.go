@@ -1,6 +1,9 @@
 package jtt
 
 import (
+	"errors"
+	"fmt"
+	"io"
 	"net"
 	"time"
 
@@ -40,6 +43,7 @@ func (e *Engine) Serve(port string) error {
 		return err
 	}
 	defer listener.Close()
+	fmt.Printf("[JTT] 监听开始: %s! \n", listener.Addr())
 
 	for {
 		rawConn, err := listener.Accept()
@@ -47,26 +51,40 @@ func (e *Engine) Serve(port string) error {
 			// Handle accept error
 			continue
 		}
+		fmt.Printf("[JTT] 终端 %s 已连接！ \n", rawConn.RemoteAddr())
 
-		c := conn.NewConnection(rawConn, time.Now().Add(time.Minute)) // Adjust expiration time as needed
+		c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
 		go func() {
-			ctx := e.createContext(c)
-			e.processMessage(ctx, c)
+			for {
+				ctx, err := e.createContext(c)
+				if err != nil {
+					fmt.Printf("[JTT] %s", err.Error())
+				}
+
+				e.processMessage(ctx)
+				e.connPoolAppend(ctx.termID, c)
+			}
 		}()
 	}
 }
 
-func (e *Engine) createContext(c *conn.Connection) *Context {
-	rawData, _ := c.Receive() // Adjust error handling as needed
+func (e *Engine) createContext(c *conn.Connection) (*Context, error) {
+	rawData, err := c.Receive()
+	if err != nil {
+		if err == io.EOF {
+			return nil, errors.New(fmt.Sprintf("终端 %s 已断开连接！ \n", c.RemoteAddr()))
+		}
+		fmt.Println(err)
+	}
 
 	return &Context{
 		c:       c,
 		rawData: rawData,
-	}
+	}, nil
 }
 
-func (e *Engine) processMessage(ctx *Context, c *conn.Connection) {
+func (e *Engine) processMessage(ctx *Context) {
 	var (
 		msgHead msg.Head
 		decoder codec.Decoder
@@ -74,13 +92,9 @@ func (e *Engine) processMessage(ctx *Context, c *conn.Connection) {
 
 	_ = decoder.Decode(msgHead, ctx.Data())
 
+	// 补充上下文信息
 	ctx.head = msgHead
-
-	// 更新连接池
-	termID := e.PhoneToTermID(msgHead.Phone)
-	if _, ok := e.connPool.Get(termID); !ok {
-		e.connPool.Add(termID, c)
-	}
+	ctx.termID = e.PhoneToTermID(msgHead.Phone)
 
 	// 执行控制器函数
 	handlers, ok := e.handlers[msgHead.MsgID]
@@ -90,6 +104,12 @@ func (e *Engine) processMessage(ctx *Context, c *conn.Connection) {
 	}
 	for _, handler := range handlers {
 		handler(ctx)
+	}
+}
+
+func (e *Engine) connPoolAppend(termID string, c *conn.Connection) {
+	if _, ok := e.connPool.Get(termID); !ok {
+		e.connPool.Add(termID, c)
 	}
 }
 
