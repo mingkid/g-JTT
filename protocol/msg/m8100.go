@@ -2,9 +2,9 @@ package msg
 
 type M8100 struct {
 	Head
-	SerialNumber uint16
-	Result       M8100Result
-	Token        string
+	AnswerSerialNo uint16
+	Result         M8100Result
+	Token          string
 }
 
 type M8100Result uint8

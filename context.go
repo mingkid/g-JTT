@@ -48,3 +48,23 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 	}
 	return ctx.c.Send(b)
 }
+
+// Register 返回终端注册响应
+func (ctx *Context) Register(res msg.M8100Result, token string) error {
+	m := msg.M8100{
+		Head: msg.Head{
+			MsgID: msg.MsgIDTermRegResp,
+			Phone: ctx.head.Phone,
+		},
+		AnswerSerialNo: ctx.head.SN,
+		Result:         res,
+		Token:          token,
+	}
+
+	e := new(codec.Encoder)
+	b, err := e.Encode(m)
+	if err != nil {
+		return err
+	}
+	return ctx.c.Send(b)
+}

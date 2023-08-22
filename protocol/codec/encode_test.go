@@ -35,9 +35,9 @@ func TestDecodeM8100(t *testing.T) {
 			Phone: "13680179679",
 			SN:    123,
 		},
-		SerialNumber: 321,
-		Result:       msg.M8100ResultSuccess,
-		Token:        "1234567890",
+		AnswerSerialNo: 321,
+		Result:         msg.M8100ResultSuccess,
+		Token:          "1234567890",
 	}
 
 	b, _ := e.Encode(m)
