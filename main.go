@@ -90,7 +90,7 @@ func (e *Engine) processMessage(ctx *Context) {
 		decoder codec.Decoder
 	)
 
-	_ = decoder.Decode(msgHead, ctx.Data())
+	_ = decoder.Decode(&msgHead, ctx.Data())
 
 	// 补充上下文信息
 	ctx.head = msgHead
