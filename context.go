@@ -14,6 +14,12 @@ type Context struct {
 	rawData []byte
 }
 
+// Head 返回终端请求消息头
+func (c *Context) Head() msg.Head {
+	return c.head
+}
+
+// Data 返回终端发送的原始数据
 func (ctx *Context) Data() []byte {
 	return ctx.rawData
 }
