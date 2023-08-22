@@ -64,3 +64,8 @@ func (c *Connection) Send(b []byte) error {
 	}
 	return nil
 }
+
+// RemoteAddr 返回远程网络地址（如果知道）
+func (c *Connection) RemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
+}

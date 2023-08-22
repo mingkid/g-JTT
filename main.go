@@ -61,7 +61,7 @@ func (e *Engine) createContext(c *conn.Connection) *Context {
 	rawData, _ := c.Receive() // Adjust error handling as needed
 
 	return &Context{
-		conn:    c,
+		c:       c,
 		rawData: rawData,
 	}
 }

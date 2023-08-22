@@ -7,12 +7,17 @@ import (
 )
 
 type Context struct {
-	conn    *conn.Connection
+	c       *conn.Connection
 	rawData []byte
 }
 
 func (ctx *Context) Data() []byte {
 	return ctx.rawData
+}
+
+// RemoteAddr 返回远程网络地址（如果知道）
+func (ctx *Context) RemoteAddr() Addr {
+	return ctx.c.RemoteAddr()
 }
 
 func (ctx *Context) Generic(res msg.M8001Result) error {
@@ -24,5 +29,5 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 	if err != nil {
 		return err
 	}
-	return ctx.conn.Send(b)
+	return ctx.c.Send(b)
 }
