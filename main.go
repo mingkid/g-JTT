@@ -1,6 +1,7 @@
 package jtt
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -13,9 +14,10 @@ import (
 )
 
 type Engine struct {
-	PhoneToTermID PhoneToTermID
-	connPool      conn.Pool
-	handlers      map[msg.MsgID][]HandleFunc
+	PhoneToTermID        PhoneToTermID
+	UnknownMsgHandleFunc HandleFunc
+	connPool             conn.Pool
+	handlers             map[msg.MsgID][]HandleFunc
 }
 
 func New(connPool conn.Pool) *Engine {
@@ -27,12 +29,8 @@ func New(connPool conn.Pool) *Engine {
 
 func Default() (e *Engine) {
 	e = New(conn.DefaultConnPool())
-	e.PhoneToTermID = func(phone string) (termID string, err error) {
-		if phone == "" {
-			return "", errors.New("TermID Not Found")
-		}
-		return phone, nil
-	}
+	e.PhoneToTermID = DefaultPhoneToTermID
+	e.UnknownMsgHandleFunc = DefaultUnknownMsgHandle
 	return
 }
 
@@ -120,8 +118,7 @@ func (e *Engine) processMessage(ctx *Context) (err error) {
 	// 执行控制器函数
 	handlers, ok := e.handlers[msgHead.MsgID]
 	if !ok {
-		// Handle unknown message ID
-		return nil
+		e.UnknownMsgHandleFunc(ctx)
 	}
 	for _, handler := range handlers {
 		handler(ctx)
@@ -140,8 +137,29 @@ func (e *Engine) checkServeRequirement() error {
 	if e.PhoneToTermID == nil {
 		return errors.New("PhoneToTermID method is not implemented")
 	}
+	if e.UnknownMsgHandleFunc == nil {
+		return errors.New("UnknownMsgHandleFunc method is not implemented")
+	}
 	return nil
 }
 
 type HandleFunc func(ctx *Context)
 type PhoneToTermID func(phone string) (termID string, err error)
+
+// DefaultPhoneToTermID 默认手机号码转终端 ID 控制器函数
+var DefaultPhoneToTermID = func(phone string) (termID string, err error) {
+	if phone == "" {
+		return "", errors.New("TermID Not Found")
+	}
+	return phone, nil
+}
+
+// DefaultUnknownMsgHandle 默认未知消息处理控制器函数
+var DefaultUnknownMsgHandle = func(ctx *Context) {
+	fmt.Printf("[JTT] %s | %s | 未知消息处理\n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), ctx.RemoteAddr(), hex.EncodeToString(ctx.Data()))
+	if ctx.Head().MsgID == msg.MsgIDTermRegister {
+		_ = ctx.Register(msg.M8100ResultTermRegistered, "")
+	} else {
+		_ = ctx.Generic(msg.M8001ResultFail)
+	}
+}
