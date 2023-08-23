@@ -27,8 +27,11 @@ func New(connPool conn.Pool) *Engine {
 
 func Default() (e *Engine) {
 	e = New(conn.DefaultConnPool())
-	e.PhoneToTermID = func(phone string) (termID string) {
-		return phone
+	e.PhoneToTermID = func(phone string) (termID string, err error) {
+		if phone == "" {
+			return "", errors.New("TermID Not Found")
+		}
+		return phone, nil
 	}
 	return
 }
@@ -60,9 +63,13 @@ func (e *Engine) Serve(ip string, port uint) error {
 				ctx, err := e.createContext(c)
 				if err != nil {
 					fmt.Printf("[JTT] %s", err.Error())
+					continue
 				}
 
-				e.processMessage(ctx)
+				if err = e.processMessage(ctx); err != nil {
+					fmt.Printf("[JTT] %s", err.Error())
+					continue
+				}
 				e.connPoolAppend(ctx.termID, c)
 			}
 		}()
@@ -84,7 +91,7 @@ func (e *Engine) createContext(c *conn.Connection) (*Context, error) {
 	}, nil
 }
 
-func (e *Engine) processMessage(ctx *Context) {
+func (e *Engine) processMessage(ctx *Context) (err error) {
 	var (
 		msgHead msg.Head
 		decoder codec.Decoder
@@ -94,17 +101,21 @@ func (e *Engine) processMessage(ctx *Context) {
 
 	// 补充上下文信息
 	ctx.head = msgHead
-	ctx.termID = e.PhoneToTermID(msgHead.Phone)
+	if ctx.termID, err = e.PhoneToTermID(msgHead.Phone); err != nil {
+		return errors.New(fmt.Sprintf("Phone %s to TermID Error: %s", msgHead.Phone, err.Error()))
+	}
 
 	// 执行控制器函数
 	handlers, ok := e.handlers[msgHead.MsgID]
 	if !ok {
 		// Handle unknown message ID
-		return
+		return nil
 	}
 	for _, handler := range handlers {
 		handler(ctx)
 	}
+
+	return
 }
 
 func (e *Engine) connPoolAppend(termID string, c *conn.Connection) {
@@ -114,4 +125,4 @@ func (e *Engine) connPoolAppend(termID string, c *conn.Connection) {
 }
 
 type HandleFunc func(ctx *Context)
-type PhoneToTermID func(phone string) (termID string)
+type PhoneToTermID func(phone string) (termID string, err error)
