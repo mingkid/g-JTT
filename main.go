@@ -62,6 +62,10 @@ func (e *Engine) Serve(ip string, port uint) error {
 			for {
 				ctx, err := e.createContext(c)
 				if err != nil {
+					if err == io.EOF {
+						fmt.Printf("[JTT] 终端 %s 已断开连接！ \n", c.RemoteAddr())
+						break
+					}
 					fmt.Printf("[JTT] %s", err.Error())
 					continue
 				}
@@ -80,9 +84,9 @@ func (e *Engine) createContext(c *conn.Connection) (*Context, error) {
 	rawData, err := c.Receive()
 	if err != nil {
 		if err == io.EOF {
-			return nil, errors.New(fmt.Sprintf("终端 %s 已断开连接！ \n", c.RemoteAddr()))
+			return nil, err
 		}
-		fmt.Println(err)
+		return nil, errors.New(fmt.Sprintf("%s Creating Context Error: %s", c.RemoteAddr(), err.Error()))
 	}
 
 	return &Context{
