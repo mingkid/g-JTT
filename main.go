@@ -41,6 +41,10 @@ func (e *Engine) RegisterHandler(messageID msg.MsgID, handler HandleFunc) {
 }
 
 func (e *Engine) Serve(ip string, port uint) error {
+	if err := e.checkServeRequirement(); err != nil {
+		return err
+	}
+
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
 		return err
@@ -49,17 +53,18 @@ func (e *Engine) Serve(ip string, port uint) error {
 	fmt.Printf("[JTT] %s | 监听开始: %s! \n", time.Now().Format("2006/01/02 - 15:04:05"), listener.Addr())
 
 	for {
+		// 创建连接对象
 		rawConn, err := listener.Accept()
 		if err != nil {
-			// Handle accept error
+			fmt.Printf("[JTT] %s | 终端 %s 连接异常 \n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr(), err.Error())
 			continue
 		}
 		fmt.Printf("[JTT] %s | 终端 %s 已连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr())
-
 		c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
 		go func() {
 			for {
+				// 创建上下文对象
 				ctx, err := e.createContext(c)
 				if err != nil {
 					if err == io.EOF {
@@ -70,10 +75,13 @@ func (e *Engine) Serve(ip string, port uint) error {
 					continue
 				}
 
+				// 终端消息处理
 				if err = e.processMessage(ctx); err != nil {
 					fmt.Printf("[JTT] %s | %s", time.Now().Format("2006/01/02 - 15:04:05"), err.Error())
 					continue
 				}
+
+				// 连接添加到连接池
 				e.connPoolAppend(ctx.termID, c)
 			}
 		}()
@@ -126,6 +134,13 @@ func (e *Engine) connPoolAppend(termID string, c *conn.Connection) {
 	if _, ok := e.connPool.Get(termID); !ok {
 		e.connPool.Add(termID, c)
 	}
+}
+
+func (e *Engine) checkServeRequirement() error {
+	if e.PhoneToTermID == nil {
+		return errors.New("PhoneToTermID method is not implemented")
+	}
+	return nil
 }
 
 type HandleFunc func(ctx *Context)
