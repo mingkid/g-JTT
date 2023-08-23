@@ -46,7 +46,7 @@ func (e *Engine) Serve(ip string, port uint) error {
 		return err
 	}
 	defer listener.Close()
-	fmt.Printf("[JTT] 监听开始: %s! \n", listener.Addr())
+	fmt.Printf("[JTT] %s | 监听开始: %s! \n", time.Now().Format("2006/01/02 - 15:04:05"), listener.Addr())
 
 	for {
 		rawConn, err := listener.Accept()
@@ -54,7 +54,7 @@ func (e *Engine) Serve(ip string, port uint) error {
 			// Handle accept error
 			continue
 		}
-		fmt.Printf("[JTT] 终端 %s 已连接！ \n", rawConn.RemoteAddr())
+		fmt.Printf("[JTT] %s | 终端 %s 已连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr())
 
 		c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
@@ -63,15 +63,15 @@ func (e *Engine) Serve(ip string, port uint) error {
 				ctx, err := e.createContext(c)
 				if err != nil {
 					if err == io.EOF {
-						fmt.Printf("[JTT] 终端 %s 已断开连接！ \n", c.RemoteAddr())
+						fmt.Printf("[JTT] %s | 终端 %s 已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
 						break
 					}
-					fmt.Printf("[JTT] %s", err.Error())
+					fmt.Printf("[JTT] %s | %s", time.Now().Format("2006/01/02 - 15:04:05"), err.Error())
 					continue
 				}
 
 				if err = e.processMessage(ctx); err != nil {
-					fmt.Printf("[JTT] %s", err.Error())
+					fmt.Printf("[JTT] %s | %s", time.Now().Format("2006/01/02 - 15:04:05"), err.Error())
 					continue
 				}
 				e.connPoolAppend(ctx.termID, c)
