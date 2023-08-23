@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mingkid/g-jtt/conn"
+	"github.com/mingkid/g-jtt/protocol/bin"
 	"github.com/mingkid/g-jtt/protocol/codec"
 	"github.com/mingkid/g-jtt/protocol/msg"
 )
@@ -97,7 +98,7 @@ func (e *Engine) createContext(c *conn.Connection) (*Context, error) {
 
 	return &Context{
 		c:       c,
-		rawData: rawData,
+		rawData: bin.Unescape(rawData),
 	}, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/mingkid/g-jtt/conn"
+	"github.com/mingkid/g-jtt/protocol/bin"
 	"github.com/mingkid/g-jtt/protocol/codec"
 	"github.com/mingkid/g-jtt/protocol/msg"
 )
@@ -52,7 +53,7 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 	if err != nil {
 		return err
 	}
-	return ctx.c.Send(b)
+	return ctx.c.Send(bin.Escape(b))
 }
 
 // Register 返回终端注册响应
@@ -72,5 +73,5 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 	if err != nil {
 		return err
 	}
-	return ctx.c.Send(b)
+	return ctx.c.Send(bin.Escape(b))
 }
