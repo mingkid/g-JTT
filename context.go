@@ -1,7 +1,10 @@
 package jtt
 
 import (
+	"encoding/hex"
+	"fmt"
 	"net"
+	"time"
 
 	"github.com/mingkid/g-jtt/conn"
 	"github.com/mingkid/g-jtt/protocol/bin"
@@ -50,12 +53,14 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 		},
 	}
 
-	e := new(codec.Encoder)
-	b, err := e.Encode(m)
-	if err = calcBodyLength(err, &m.Head, m.M8001Body); err != nil {
+	b, err := packaging(m, &m.Head, m.M8001Body)
+	if err != nil {
 		return err
 	}
-	return ctx.c.Send(bin.Escape(b))
+
+	err = ctx.c.Send(b)
+	fmt.Printf("[JTT] %s | %s | 发送消息 \n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), ctx.RemoteAddr(), hex.EncodeToString(b))
+	return err
 }
 
 // Register 返回终端注册响应
@@ -72,14 +77,36 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 		},
 	}
 
-	e := new(codec.Encoder)
-	b, err := e.Encode(m)
-	if err = calcBodyLength(err, &m.Head, m.M8100Body); err != nil {
+	b, err := packaging(m, &m.Head, m.M8100Body)
+	if err != nil {
 		return err
 	}
-	return ctx.c.Send(bin.Escape(b))
+
+	err = ctx.c.Send(b)
+	fmt.Printf("[JTT] %s | %s | 发送消息 \n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), ctx.RemoteAddr(), hex.EncodeToString(b))
+	return err
 }
 
+// packaging 封装
+func packaging(m any, h *msg.Head, body any) ([]byte, error) {
+	// 编码
+	e := new(codec.Encoder)
+	b, err := e.Encode(m)
+
+	// 计算消息体长度
+	if err = calcBodyLength(err, h, body); err != nil {
+		return nil, err
+	}
+
+	// 填充校验码
+	b = append(b, bin.Checksum(b))
+
+	//  转义
+	b = bin.Escape(b)
+	return b, nil
+}
+
+// calcBodyLength 计算消息体长度
 func calcBodyLength(err error, head *msg.Head, body any) error {
 	size, err := bin.CalculateMsgLength(body)
 	if err != nil {
