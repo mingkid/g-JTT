@@ -2,6 +2,10 @@ package msg
 
 type M8100 struct {
 	Head
+	M8100Body
+}
+
+type M8100Body struct {
 	AnswerSerialNo uint16
 	Result         M8100Result
 	Token          string

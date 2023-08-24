@@ -52,13 +52,16 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 
 		case reflect.String:
 			if strings.HasPrefix(tagValue, "bcd") {
+				// BCD 编码
 				parts := strings.Split(tagValue, ",")
 				length, _ := strconv.Atoi(parts[1])
 				err := writer.WriteBCD(fieldValue.String(), length)
 				if err != nil {
 					return err
 				}
+
 			} else {
+				//  GBK 编码
 				err := writer.WriteString(fieldValue.String())
 				if err != nil {
 					return err

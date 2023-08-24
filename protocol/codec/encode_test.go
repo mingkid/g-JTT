@@ -15,9 +15,11 @@ func TestDecodeM8001(t *testing.T) {
 			Phone: "13680179679",
 			SN:    123,
 		},
-		AnswerSerialNo: 321,
-		AnswerMsgID:    msg.MsgIDTermLocationReport,
-		Result:         msg.M8001ResultFail,
+		M8001Body: msg.M8001Body{
+			AnswerSerialNo: 321,
+			AnswerMsgID:    msg.MsgIDTermLocationReport,
+			Result:         msg.M8001ResultFail,
+		},
 	}
 
 	b, _ := e.Encode(m)
@@ -35,9 +37,11 @@ func TestDecodeM8100(t *testing.T) {
 			Phone: "13680179679",
 			SN:    123,
 		},
-		AnswerSerialNo: 321,
-		Result:         msg.M8100ResultSuccess,
-		Token:          "1234567890",
+		M8100Body: msg.M8100Body{
+			AnswerSerialNo: 321,
+			Result:         msg.M8100ResultSuccess,
+			Token:          "1234567890",
+		},
 	}
 
 	b, _ := e.Encode(m)

@@ -2,6 +2,10 @@ package msg
 
 type M8001 struct {
 	Head
+	M8001Body
+}
+
+type M8001Body struct {
 	AnswerSerialNo uint16      // 应答流水号，对应的终端消息的流水号
 	AnswerMsgID    MsgID       // 应答ID，对应的终端消息的ID
 	Result         M8001Result // 结果

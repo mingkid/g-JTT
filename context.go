@@ -22,8 +22,8 @@ func (ctx *Context) TermID() string {
 }
 
 // Head 返回终端请求消息头
-func (c *Context) Head() msg.Head {
-	return c.head
+func (ctx *Context) Head() msg.Head {
+	return ctx.head
 }
 
 // Data 返回终端发送的原始数据
@@ -43,14 +43,16 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 			MsgID: msg.MsgIDPlatformCommResp,
 			Phone: ctx.head.Phone,
 		},
-		AnswerSerialNo: ctx.head.SN,
-		AnswerMsgID:    ctx.head.MsgID,
-		Result:         res,
+		M8001Body: msg.M8001Body{
+			AnswerSerialNo: ctx.head.SN,
+			AnswerMsgID:    ctx.head.MsgID,
+			Result:         res,
+		},
 	}
 
 	e := new(codec.Encoder)
 	b, err := e.Encode(m)
-	if err != nil {
+	if err = calcBodyLength(err, &m.Head, m.M8001Body); err != nil {
 		return err
 	}
 	return ctx.c.Send(bin.Escape(b))
@@ -63,15 +65,28 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 			MsgID: msg.MsgIDTermRegResp,
 			Phone: ctx.head.Phone,
 		},
-		AnswerSerialNo: ctx.head.SN,
-		Result:         res,
-		Token:          token,
+		M8100Body: msg.M8100Body{
+			AnswerSerialNo: ctx.head.SN,
+			Result:         res,
+			Token:          token,
+		},
 	}
 
 	e := new(codec.Encoder)
 	b, err := e.Encode(m)
-	if err != nil {
+	if err = calcBodyLength(err, &m.Head, m.M8100Body); err != nil {
 		return err
 	}
 	return ctx.c.Send(bin.Escape(b))
+}
+
+func calcBodyLength(err error, head *msg.Head, body any) error {
+	size, err := bin.CalculateMsgLength(body)
+	if err != nil {
+		return err
+	}
+	if err = head.SetBodyLength(size); err != nil {
+		return err
+	}
+	return nil
 }
