@@ -89,12 +89,15 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 
 // packaging 封装
 func packaging(m any, h *msg.Head, body any) ([]byte, error) {
+	// 计算消息体长度
+	if err := calcBodyLength(h, body); err != nil {
+		return nil, err
+	}
+
 	// 编码
 	e := new(codec.Encoder)
 	b, err := e.Encode(m)
-
-	// 计算消息体长度
-	if err = calcBodyLength(err, h, body); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -107,7 +110,7 @@ func packaging(m any, h *msg.Head, body any) ([]byte, error) {
 }
 
 // calcBodyLength 计算消息体长度
-func calcBodyLength(err error, head *msg.Head, body any) error {
+func calcBodyLength(head *msg.Head, body any) error {
 	size, err := bin.CalculateMsgLength(body)
 	if err != nil {
 		return err
