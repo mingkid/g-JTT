@@ -53,8 +53,8 @@ func (prop BodyProps) Encrypted() bool {
 }
 
 // SetEncrypt 设置加密
-func (prop BodyProps) SetEncrypt() {
-	prop |= 0x01 << 10
+func (prop *BodyProps) SetEncrypt() {
+	*prop |= 0x01 << 10
 }
 
 // IsMultiplePackage 分包返回 true，否而返回 false
@@ -63,8 +63,8 @@ func (prop BodyProps) IsMultiplePackage() bool {
 }
 
 // SetMultiplePackage 设置分包
-func (prop BodyProps) SetMultiplePackage() {
-	prop |= 0x01 << 13
+func (prop *BodyProps) SetMultiplePackage() {
+	*prop |= 0x01 << 13
 }
 
 // BodyLength 消息体长度
@@ -73,11 +73,11 @@ func (prop BodyProps) BodyLength() uint16 {
 }
 
 // SetBodyLength 设置消息体长度
-func (prop BodyProps) SetBodyLength(len uint16) error {
+func (prop *BodyProps) SetBodyLength(len uint16) error {
 	if len > MsgBodyMaxLength {
 		return errors.New(fmt.Sprintf("消息体长度设置不能超过%v", MsgBodyMaxLength))
 	}
-	prop |= prop & BodyProps(len)
+	*prop |= (*prop & 0xfc00) | BodyProps(len)
 	return nil
 }
 
