@@ -1,11 +1,6 @@
 package msg
 
 type M0100 struct {
-	Head
-	M0100Body
-}
-
-type M0100Body struct {
 	ProvincialID      uint16 // 省份 ID
 	CityID            uint16 // 城市 ID
 	ManufacturerID    string `jtt13:"5"`  // 制造商 ID

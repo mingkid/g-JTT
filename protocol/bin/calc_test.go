@@ -7,20 +7,16 @@ import (
 )
 
 func TestCalculateMsgLength(t *testing.T) {
-	m := msg.M0100{
-		Head: msg.Head{},
-		M0100Body: msg.M0100Body{
-			ProvincialID:      42,
-			CityID:            2130,
-			ManufacturerID:    "12345",
-			TermModel:         "00003624",
-			TermID:            "0244487",
-			LicensePlateColor: 255,
-			LicensePlate:      "粤B88888",
-		},
-	}
+	m := msg.New[msg.M0100]()
+	m.Body.ProvincialID = 42
+	m.Body.CityID = 2130
+	m.Body.ManufacturerID = "12345"
+	m.Body.TermModel = "00003624"
+	m.Body.TermID = "0244487"
+	m.Body.LicensePlateColor = 255
+	m.Body.LicensePlate = "粤B88888"
 
-	if size, _ := CalculateMsgLength(m.M0100Body); size != 45 {
+	if size, _ := CalculateMsgLength(m.Body); size != 45 {
 		t.Errorf("calculate msg length failed")
 	}
 }

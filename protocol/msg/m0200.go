@@ -4,11 +4,6 @@ import "time"
 
 // M0200 JT/T808 0200 数据包
 type M0200 struct {
-	Head
-	M0200Body
-}
-
-type M0200Body struct {
 	Warn      M0200Warn
 	Status    M0200Status
 	Latitude  uint32
@@ -21,6 +16,6 @@ type M0200Body struct {
 }
 
 // LocateTime 定位时间
-func (m *M0200Body) LocateTime() (time.Time, error) {
+func (m *M0200) LocateTime() (time.Time, error) {
 	return time.ParseInLocation("20060102150405", "20"+m.Time, time.Local)
 }

@@ -6,18 +6,13 @@ import (
 )
 
 type M0704 struct {
-	Head
-	M0704Body
-}
-
-type M0704Body struct {
 	Count    uint16 // 数据项个数
 	Type     uint8  // 位置数据类型
 	RawItems []byte // 位置汇报数据项，原始数据
 	items    [][]byte
 }
 
-func (m *M0704Body) Items() (res [][]byte, err error) {
+func (m *M0704) Items() (res [][]byte, err error) {
 	if m.items == nil {
 		if err = m.analyze(); err != nil {
 			return
@@ -26,7 +21,7 @@ func (m *M0704Body) Items() (res [][]byte, err error) {
 	return m.items, nil
 }
 
-func (m *M0704Body) analyze() error {
+func (m *M0704) analyze() error {
 	if m.Count == 0 {
 		return nil
 	}

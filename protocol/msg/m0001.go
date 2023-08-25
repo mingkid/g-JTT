@@ -2,11 +2,6 @@ package msg
 
 // M0001 终端通用应答
 type M0001 struct {
-	Head
-	M0001Body
-}
-
-type M0001Body struct {
 	AnswerSerialNo uint16      // 应答流水号
 	AnswerMsgID    MsgID       // 应答消息ID
 	Result         M0001Result // 处理结果

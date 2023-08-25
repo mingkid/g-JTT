@@ -22,7 +22,7 @@ package main
 
 import (
 	"fmt"
-	
+
 	"github.com/mingkid/g-JTT/protocol/codec"
 	"github.com/mingkid/g-JTT/protocol/msg"
 )
@@ -32,19 +32,17 @@ func main() {
 	engine := jtt.Default()
 
 	// Register message handlers
-	engine.RegisterHandler(msg.MsgIDTermLocationReport, handleMessage)
+	engine.RegisterHandler(msg.MsgID(0x0200), handleMessage)
 
 	// Start the communication server
 	_ = engine.Serve(":8080")
 }
 
 func handleMessage(ctx *jtt.Context) {
-	var (
-		m     msg.M0200
-		d codec.Decoder
-	)
+	var decoder codec.Decoder
+	m := msg.New[msg.M0200]()
 
-	_ = d.Decode(&m, ctx.Data())
+	decoder.Decode(m, ctx.Data())
 	fmt.Printf("Hello, %s", msg.Head.Phone)
 }
 ```

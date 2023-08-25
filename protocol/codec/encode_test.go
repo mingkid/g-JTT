@@ -15,7 +15,7 @@ func TestDecodeM8001(t *testing.T) {
 			Phone: "13680179679",
 			SN:    123,
 		},
-		M8001Body: msg.M8001Body{
+		M8001Body: msg.M8001{
 			AnswerSerialNo: 321,
 			AnswerMsgID:    msg.MsgIDTermLocationReport,
 			Result:         msg.M8001ResultFail,
@@ -37,7 +37,7 @@ func TestDecodeM8100(t *testing.T) {
 			Phone: "13680179679",
 			SN:    123,
 		},
-		M8100Body: msg.M8100Body{
+		M8100Body: msg.M8100{
 			AnswerSerialNo: 321,
 			Result:         msg.M8100ResultSuccess,
 			Token:          "1234567890",

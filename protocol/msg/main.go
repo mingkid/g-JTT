@@ -35,7 +35,20 @@ const (
 
 const MsgBodyMaxLength = 0x03ff
 
-// Head is Message Head
+// Msg 消息
+type Msg[TBody any] struct {
+	Head
+	Body TBody
+}
+
+// New 返回新的消息对象
+func New[TBody any]() *Msg[TBody] {
+	return &Msg[TBody]{
+		Body: *new(TBody),
+	}
+}
+
+// Head 消息头
 type Head struct {
 	MsgID MsgID
 	BodyProps
@@ -45,6 +58,7 @@ type Head struct {
 	//MsgPackagePacking
 }
 
+// BodyProps 消息体属性
 type BodyProps uint16
 
 // Encrypted 加密返回 true，否而返回 false
@@ -81,6 +95,7 @@ func (prop *BodyProps) SetBodyLength(len uint16) error {
 	return nil
 }
 
+// MsgPackagePacking 分包项
 type MsgPackagePacking struct {
 	Total    uint16 `json:"total"`    // 消息包总数
 	SerialNo uint16 `json:"serialNo"` // 包序号

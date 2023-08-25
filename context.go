@@ -41,19 +41,19 @@ func (ctx *Context) RemoteAddr() net.Addr {
 
 // Generic 返回平台通用响应
 func (ctx *Context) Generic(res msg.M8001Result) error {
-	m := msg.M8001{
+	m := msg.Msg[msg.M8001]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDPlatformCommResp,
 			Phone: ctx.head.Phone,
 		},
-		M8001Body: msg.M8001Body{
+		Body: msg.M8001{
 			AnswerSerialNo: ctx.head.SN,
 			AnswerMsgID:    ctx.head.MsgID,
 			Result:         res,
 		},
 	}
 
-	b, err := packaging(m, &m.Head, m.M8001Body)
+	b, err := packaging(&m)
 	if err != nil {
 		return err
 	}
@@ -65,19 +65,19 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 
 // Register 返回终端注册响应
 func (ctx *Context) Register(res msg.M8100Result, token string) error {
-	m := msg.M8100{
+	m := msg.Msg[msg.M8100]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDTermRegResp,
 			Phone: ctx.head.Phone,
 		},
-		M8100Body: msg.M8100Body{
+		Body: msg.M8100{
 			AnswerSerialNo: ctx.head.SN,
 			Result:         res,
 			Token:          token,
 		},
 	}
 
-	b, err := packaging(m, &m.Head, m.M8100Body)
+	b, err := packaging(&m)
 	if err != nil {
 		return err
 	}
@@ -88,9 +88,9 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 }
 
 // packaging 封装
-func packaging(m any, h *msg.Head, body any) ([]byte, error) {
+func packaging[TBody any](m *msg.Msg[TBody]) ([]byte, error) {
 	// 计算消息体长度
-	if err := calcBodyLength(h, body); err != nil {
+	if err := calcBodyLength(m); err != nil {
 		return nil, err
 	}
 
@@ -110,12 +110,12 @@ func packaging(m any, h *msg.Head, body any) ([]byte, error) {
 }
 
 // calcBodyLength 计算消息体长度
-func calcBodyLength(head *msg.Head, body any) error {
-	size, err := bin.CalculateMsgLength(body)
+func calcBodyLength[TBody any](m *msg.Msg[TBody]) error {
+	size, err := bin.CalculateMsgLength(m.Body)
 	if err != nil {
 		return err
 	}
-	if err = head.SetBodyLength(size); err != nil {
+	if err = m.Head.SetBodyLength(size); err != nil {
 		return err
 	}
 	return nil

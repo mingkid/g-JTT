@@ -35,19 +35,14 @@ func main() {
 	engine.RegisterHandler(msg.MsgID(0x0200), handleMessage)
 
 	// Start the communication server
-	err := engine.Serve(":8080")
-	if err != nil {
-		fmt.Printf("Error starting server: %v", err)
-	}
+	_ = engine.Serve(":8080")
 }
 
 func handleMessage(ctx *jtt.Context) {
-	var (
-		msg     msg.M0200
-		decoder codec.Decoder
-	)
+	var decoder codec.Decoder
+	m := msg.New[msg.M0200]()
 
-	decoder.Decode(&msg, ctx.Data())
+	decoder.Decode(m, ctx.Data())
 	fmt.Printf("Hello, %s", msg.Head.Phone)
 }
 ```
