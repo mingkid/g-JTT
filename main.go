@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/mingkid/g-jtt/conn"
-	"github.com/mingkid/g-jtt/protocol/bin"
 	"github.com/mingkid/g-jtt/protocol/codec"
 	"github.com/mingkid/g-jtt/protocol/msg"
 )
@@ -64,19 +63,19 @@ func (e *Engine) Serve(ip string, port uint) error {
 		go func() {
 			for {
 				// 创建上下文对象
-				ctx, err := e.createContext(c)
+				ctx, err := NewContext(c)
 				if err != nil {
 					if err == io.EOF {
-						fmt.Printf("[JTT] %s | %s |终端已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
+						fmt.Printf("[JTT] %s | %s | 终端已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
 						break
 					}
-					fmt.Printf("[JTT] %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), err.Error())
+					fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
 					continue
 				}
 
 				// 终端消息处理
 				if err = e.processMessage(ctx); err != nil {
-					fmt.Printf("[JTT] %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), err.Error())
+					fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
 					continue
 				}
 
@@ -85,29 +84,6 @@ func (e *Engine) Serve(ip string, port uint) error {
 			}
 		}()
 	}
-}
-
-func (e *Engine) createContext(c *conn.Connection) (*Context, error) {
-	rawData, err := c.Receive()
-	if err != nil {
-		if err == io.EOF {
-			return nil, err
-		}
-		return nil, errors.New(fmt.Sprintf(" %s | 创建上下文异常: %s", c.RemoteAddr(), err.Error()))
-	}
-	fmt.Printf("[JTT] %s | %s |收到终端数据\n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), hex.EncodeToString(rawData))
-
-	// 转义还原，验证校验码，删除校验位
-	data := bin.Unescape(rawData)
-	if err = bin.Verify(data[:len(data)-1], data[len(data)-1]); err != nil {
-		return nil, errors.New(fmt.Sprintf("%s | 创建上下文异常: %s", c.RemoteAddr(), err.Error()))
-	}
-	data = data[:len(data)-1]
-
-	return &Context{
-		c:       c,
-		rawData: data,
-	}, nil
 }
 
 func (e *Engine) processMessage(ctx *Context) (err error) {
@@ -120,8 +96,8 @@ func (e *Engine) processMessage(ctx *Context) (err error) {
 
 	// 补充上下文信息
 	ctx.head = msgHead
-	if ctx.termID, err = e.PhoneToTermID(msgHead.Phone); err != nil {
-		return errors.New(fmt.Sprintf("%s | 终端手机转终端 ID 错误: %s", msgHead.Phone, err.Error()))
+	if ctx.termID, err = e.PhoneToTermID(ctx); err != nil {
+		return errors.New(fmt.Sprintf("终端手机[%s]转终端 ID 错误: %s", msgHead.Phone, err.Error()))
 	}
 
 	// 执行控制器函数
@@ -153,14 +129,14 @@ func (e *Engine) checkServeRequirement() error {
 }
 
 type HandleFunc func(ctx *Context)
-type PhoneToTermID func(phone string) (termID string, err error)
+type PhoneToTermID func(ctx *Context) (termID string, err error)
 
 // DefaultPhoneToTermID 默认手机号码转终端 ID 控制器函数
-var DefaultPhoneToTermID = func(phone string) (termID string, err error) {
-	if phone == "" {
-		return "", errors.New(fmt.Sprintf("%s | 终端 ID 不存在", phone))
+var DefaultPhoneToTermID = func(ctx *Context) (termID string, err error) {
+	if ctx.Head().Phone == "" {
+		return "", errors.New("")
 	}
-	return phone, nil
+	return ctx.Head().Phone, nil
 }
 
 // DefaultUnknownMsgHandle 默认未知消息处理控制器函数
