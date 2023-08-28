@@ -4,9 +4,8 @@ import "fmt"
 
 // Checksum 返回校验和
 func Checksum(b []byte) (sum byte) {
-	sum = b[0] // 取第0个，从第1个开始异或
-	for i := 1; i < len(b); i++ {
-		sum = sum ^ b[i]
+	for _, i := range b {
+		sum ^= i
 	}
 	return
 }

@@ -17,7 +17,9 @@ func Unescape(b []byte) (res []byte) {
 	str := hex.EncodeToString(b)
 
 	// 去头尾
-	str = strings.Replace(str, IdentityBitChar, "", -1)
+	if strings.HasPrefix(str, IdentityBitChar) && strings.HasSuffix(str, IdentityBitChar) {
+		str = str[2 : len(str)-2]
+	}
 
 	// 反转义
 	str = strings.Replace(str, IdentityBitEscapeChar, IdentityBitChar, -1)
