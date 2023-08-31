@@ -3,14 +3,15 @@ package codec
 import (
 	"fmt"
 	"github.com/mingkid/g-jtt/protocol/bin"
+	"github.com/mingkid/g-jtt/protocol/msg"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-type Encoder struct{}
+type Encoder[TBody any] struct{}
 
-func (e *Encoder) Encode(msg any) ([]byte, error) {
+func (e *Encoder[TBody]) Encode(msg msg.Msg[TBody]) ([]byte, error) {
 	writer := bin.NewWriter()
 
 	msgType := reflect.ValueOf(msg)
@@ -26,7 +27,7 @@ func (e *Encoder) Encode(msg any) ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
-func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) error {
+func (e *Encoder[TBody]) encodeStruct(structValue reflect.Value, writer *bin.Writer) error {
 	structType := structValue.Type()
 
 	for i := 0; i < structType.NumField(); i++ {
@@ -35,7 +36,7 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 
 		tagValue := fieldType.Tag.Get("jtt13")
 
-		if tagValue == "-" {
+		if tagValue == Ignore {
 			continue
 		}
 
@@ -51,7 +52,7 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 			}
 
 		case reflect.String:
-			if strings.HasPrefix(tagValue, "bcd") {
+			if strings.HasPrefix(tagValue, BCD) {
 				// BCD 编码
 				parts := strings.Split(tagValue, ",")
 				length, _ := strconv.Atoi(parts[1])

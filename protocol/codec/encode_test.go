@@ -8,14 +8,14 @@ import (
 )
 
 func TestDecodeM8001(t *testing.T) {
-	var e Encoder
-	m := msg.M8001{
+	var e Encoder[msg.M8001]
+	m := msg.Msg[msg.M8001]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDPlatformCommResp,
 			Phone: "13680179679",
 			SN:    123,
 		},
-		M8001Body: msg.M8001{
+		Body: msg.M8001{
 			AnswerSerialNo: 321,
 			AnswerMsgID:    msg.MsgIDTermLocationReport,
 			Result:         msg.M8001ResultFail,
@@ -30,14 +30,14 @@ func TestDecodeM8001(t *testing.T) {
 }
 
 func TestDecodeM8100(t *testing.T) {
-	var e Encoder
-	m := msg.M8100{
+	var e Encoder[msg.M8100]
+	m := msg.Msg[msg.M8100]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDTermRegResp,
 			Phone: "13680179679",
 			SN:    123,
 		},
-		M8100Body: msg.M8100{
+		Body: msg.M8100{
 			AnswerSerialNo: 321,
 			Result:         msg.M8100ResultSuccess,
 			Token:          "1234567890",

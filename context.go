@@ -123,8 +123,8 @@ func packaging[TBody any](m *msg.Msg[TBody]) ([]byte, error) {
 	}
 
 	// 编码
-	e := new(codec.Encoder)
-	b, err := e.Encode(m)
+	e := new(codec.Encoder[TBody])
+	b, err := e.Encode(*m)
 	if err != nil {
 		return nil, err
 	}
