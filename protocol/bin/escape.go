@@ -33,9 +33,9 @@ func Unescape(b []byte) (res []byte) {
 func Escape(b []byte) (res []byte) {
 	str := hex.EncodeToString(b)
 
-	// 转义
-	str = strings.Replace(str, IdentityBitChar, IdentityBitEscapeChar, -1)
+	// 转义；转义顺序不能调转，防止 7e 转换成 7d 后，又将 7d 做一次转义
 	str = strings.Replace(str, EscapeBitChar, EscapeBitEscapeChar, -1)
+	str = strings.Replace(str, IdentityBitChar, IdentityBitEscapeChar, -1)
 
 	// 加头尾
 	str = IdentityBitChar + str + IdentityBitChar
