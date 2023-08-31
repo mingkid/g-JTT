@@ -92,7 +92,9 @@ func (e *Engine) processMessage(ctx *Context) (err error) {
 		decoder codec.Decoder
 	)
 
-	_ = decoder.Decode(&msgHead, ctx.Data())
+	if err = decoder.Decode(&msgHead, ctx.Data()); err != nil {
+		return
+	}
 
 	// 补充上下文信息
 	ctx.head = msgHead
