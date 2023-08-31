@@ -167,6 +167,7 @@ func NewFiledDecoder(f reflect.StructField, fv *reflect.Value, tagVal string, r 
 			return nil, fmt.Errorf("不支持的数据类型 %s", kind)
 		}
 		return &MapFieldDecoder{
+			f:  f,
 			fv: fv,
 			r:  r,
 		}, nil
