@@ -26,10 +26,19 @@ func (cp *MemoryConnPool) Get(termID string) (c *Connection, ok bool) {
 	return
 }
 
-func (m *MemoryConnPool) disconnectOnTimeout(sn string) {
-	if c, found := m.connections[sn]; found {
+// Remove 释放终端 ID 对应的连接对象
+func (cp *MemoryConnPool) Remove(termID string) {
+	cp.mu.Lock()
+	defer cp.mu.Unlock()
+	if _, found := cp.connections[termID]; found {
+		delete(cp.connections, termID)
+	}
+}
+
+func (cp *MemoryConnPool) disconnectOnTimeout(termID string) {
+	if c, found := cp.connections[termID]; found {
 		if c.IsExpired() {
-			delete(m.connections, sn)
+			delete(cp.connections, termID)
 		}
 	}
 }

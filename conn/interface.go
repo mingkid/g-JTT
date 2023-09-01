@@ -5,4 +5,6 @@ type Pool interface {
 	Add(termID string, conn *Connection)
 	// Get 返回终端 ID 对应的连接对象
 	Get(termID string) (*Connection, bool)
+	// Remove 删除终端 ID 对应的连接对象
+	Remove(termID string)
 }

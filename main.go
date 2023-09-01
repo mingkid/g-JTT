@@ -58,31 +58,43 @@ func (e *Engine) Serve(ip string, port uint) error {
 			continue
 		}
 		fmt.Printf("[JTT] %s | %s |终端已连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr())
-		c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
-		go func() {
-			for {
-				// 创建上下文对象
-				ctx, err := NewContext(c)
-				if err != nil {
-					if err == io.EOF {
-						fmt.Printf("[JTT] %s | %s | 终端已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
-						break
-					}
-					fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
-					continue
-				}
+		go e.handleConnection(rawConn)
+	}
+}
 
-				// 终端消息处理
-				if err = e.processMessage(ctx); err != nil {
-					fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
-					continue
-				}
+func (e *Engine) handleConnection(rawConn net.Conn) {
+	var (
+		ctx *Context
+		err error
+	)
+	c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
-				// 连接添加到连接池
-				e.connPoolAppend(ctx.termID, c)
+	defer func() {
+		_ = rawConn.Close()
+		e.connPool.Remove(ctx.termID)
+	}()
+
+	for {
+		// 创建上下文对象
+		ctx, err = NewContext(c)
+		if err != nil {
+			if err == io.EOF {
+				fmt.Printf("[JTT] %s | %s | 终端已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
+				break
 			}
-		}()
+			fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
+			continue
+		}
+
+		// 终端消息处理
+		if err = e.processMessage(ctx); err != nil {
+			fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
+			continue
+		}
+
+		// 连接更新到连接池
+		e.connPoolUpdate(ctx.termID, c)
 	}
 }
 
@@ -114,7 +126,7 @@ func (e *Engine) processMessage(ctx *Context) (err error) {
 	return
 }
 
-func (e *Engine) connPoolAppend(termID string, c *conn.Connection) {
+func (e *Engine) connPoolUpdate(termID string, c *conn.Connection) {
 	if _, ok := e.connPool.Get(termID); !ok {
 		e.connPool.Add(termID, c)
 	}
