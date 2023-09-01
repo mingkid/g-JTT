@@ -3,6 +3,7 @@ package codec
 import (
 	"encoding/hex"
 	"fmt"
+	"net"
 	"testing"
 
 	"github.com/mingkid/g-jtt/protocol/msg"
@@ -48,5 +49,22 @@ func TestEncodeM8100(t *testing.T) {
 	b, _ := e.Encode(m)
 	if hex.EncodeToString(b) != "81000000013680179679007b01410031323334353637383930" {
 		t.Fatalf("组包错误，应为%s，实际为%s", "81000000013680179679007b01410031323334353637383930", hex.EncodeToString(b))
+	}
+}
+
+func TestEncodeM9101(t *testing.T) {
+	var e Encoder
+	m := msg.M9101{
+		LogicalChannel: 3,
+		DataType:       msg.M9101DataTypeAudioVideo,
+		StreamType:     msg.M9101StreamTypeMain,
+	}
+	m.SetTCPAddr(net.ParseIP("192.168.0.123"), 123)
+	m.SetUDPAddr(net.ParseIP("192.168.0.123"), 456)
+
+	b, _ := e.Encode(m)
+
+	if hex.EncodeToString(b) != "0d3139322e3136382e302e313233007b01c8030000" {
+		t.Fatalf("组包错误，应为%s，实际为%s", "0d3139322e3136382e302e313233007b01c8030000", hex.EncodeToString(b))
 	}
 }

@@ -83,8 +83,7 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 			}
 
 		case reflect.Struct:
-			err := e.encodeStruct(fieldValue, writer)
-			if err != nil {
+			if err := e.encodeStruct(fieldValue, writer); err != nil {
 				return err
 			}
 
