@@ -68,3 +68,19 @@ func TestEncodeM9101(t *testing.T) {
 		t.Fatalf("组包错误，应为%s，实际为%s", "0d3139322e3136382e302e313233007b01c8030000", hex.EncodeToString(b))
 	}
 }
+
+func TestEncodeM9102(t *testing.T) {
+	var e Encoder
+	m := msg.M9102{
+		LogicChannelNumber:  1,
+		ControlDirective:    msg.M9102ControlSwitchStream,
+		CloseAudioVideoType: msg.M9102CloseAudio,
+		SwitchStreamType:    msg.M9102SwitchToSubStream,
+	}
+
+	b, _ := e.Encode(m)
+
+	if hex.EncodeToString(b) != "01010101" {
+		t.Fatalf("组包错误，应为%s，实际为%s", "01010101", hex.EncodeToString(b))
+	}
+}
