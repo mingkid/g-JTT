@@ -2,16 +2,16 @@ package codec
 
 import (
 	"fmt"
-	"github.com/mingkid/g-jtt/protocol/bin"
-	"github.com/mingkid/g-jtt/protocol/msg"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/mingkid/g-jtt/protocol/bin"
 )
 
-type Encoder[TBody any] struct{}
+type Encoder struct{}
 
-func (e *Encoder[TBody]) Encode(msg msg.Msg[TBody]) ([]byte, error) {
+func (e *Encoder) Encode(msg any) ([]byte, error) {
 	writer := bin.NewWriter()
 
 	msgType := reflect.ValueOf(msg)
@@ -27,7 +27,7 @@ func (e *Encoder[TBody]) Encode(msg msg.Msg[TBody]) ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
-func (e *Encoder[TBody]) encodeStruct(structValue reflect.Value, writer *bin.Writer) error {
+func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) error {
 	structType := structValue.Type()
 
 	for i := 0; i < structType.NumField(); i++ {

@@ -3,12 +3,13 @@ package codec
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/mingkid/g-jtt/protocol/msg"
 	"testing"
+
+	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
-func TestDecodeM8001(t *testing.T) {
-	var e Encoder[msg.M8001]
+func TestEncodeM8001(t *testing.T) {
+	var e Encoder
 	m := msg.Msg[msg.M8001]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDPlatformCommResp,
@@ -29,8 +30,8 @@ func TestDecodeM8001(t *testing.T) {
 	}
 }
 
-func TestDecodeM8100(t *testing.T) {
-	var e Encoder[msg.M8100]
+func TestEncodeM8100(t *testing.T) {
+	var e Encoder
 	m := msg.Msg[msg.M8100]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDTermRegResp,
