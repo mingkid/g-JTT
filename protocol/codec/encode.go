@@ -51,6 +51,16 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 				return err
 			}
 
+		case reflect.Uint32:
+			if err := writer.WriteUint32(uint32(fieldValue.Uint())); err != nil {
+				return err
+			}
+
+		case reflect.Uint64:
+			if err := writer.WriteUint64(uint64(fieldValue.Uint())); err != nil {
+				return err
+			}
+
 		case reflect.String:
 			if strings.HasPrefix(tagValue, BCD) {
 				// BCD 编码

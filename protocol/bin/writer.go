@@ -32,6 +32,22 @@ func (w *Writer) WriteUint16(data uint16) (err error) {
 	return
 }
 
+// WriteUint32 写入32位数据
+func (w *Writer) WriteUint32(data uint32) (err error) {
+	var temp = make([]byte, 4)
+	binary.BigEndian.PutUint32(temp[:], data)
+	_, err = w.b.Write(temp)
+	return
+}
+
+// WriteUint64 写入64位数据
+func (w *Writer) WriteUint64(data uint64) (err error) {
+	var temp = make([]byte, 8)
+	binary.BigEndian.PutUint64(temp[:], data)
+	_, err = w.b.Write(temp)
+	return
+}
+
 // WriteBCD 写入BCD编码
 func (w *Writer) WriteBCD(s string, length int) error {
 	// 长度不够补位

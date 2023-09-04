@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/mingkid/g-jtt/protocol/msg"
 )
@@ -82,5 +83,24 @@ func TestEncodeM9102(t *testing.T) {
 
 	if hex.EncodeToString(b) != "01010101" {
 		t.Fatalf("组包错误，应为%s，实际为%s", "01010101", hex.EncodeToString(b))
+	}
+}
+
+func TestEncodeM9205(t *testing.T) {
+	var e Encoder
+	m := msg.NewM9205(4)
+	startTime, _ := time.Parse("20060102150405", "20230904000000")
+	m.SetStartTime(startTime)
+	endTime, _ := time.Parse("20060102150405", "20230904171002")
+	m.SetEndTime(endTime)
+	m.Warn.SetOverSpeed(true)
+	m.AVResourceType = msg.M9205AVResourceVideo
+	m.StreamType = msg.M9205StreamMain
+	m.StorageType = msg.M9205StorageTypeMain
+
+	b, _ := e.Encode(m)
+
+	if hex.EncodeToString(b) != "042309040000002309041710020000000000000002020101" {
+		t.Fatalf("组包错误，应为%s，实际为%s", "042309040000002309041710020000000000000002020101", hex.EncodeToString(b))
 	}
 }
