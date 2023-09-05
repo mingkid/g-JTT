@@ -47,3 +47,12 @@ const (
 	StreamTypeMain                   // 主码流
 	StreamTypeSub                    // 子码流
 )
+
+// StorageType 存储类型
+type StorageType uint8
+
+const (
+	StorageTypeAll    StorageType = iota // 所有存储器
+	StorageTypeMain                      // 主存储器
+	StorageTypeBackup                    // 灾备存储器
+)
