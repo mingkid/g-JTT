@@ -56,3 +56,26 @@ const (
 	StorageTypeMain                      // 主存储器
 	StorageTypeBackup                    // 灾备存储器
 )
+
+// ReplayMode 回放方式
+type ReplayMode uint8
+
+const (
+	ReplayModeNormal      ReplayMode = iota // 正常回放
+	ReplayModeFast                          // 快进回放
+	ReplayModeFrameBack                     // 关键帧快退回放
+	ReplayModeFrame                         // 关键帧播放
+	ReplayModeSingleFrame                   // 单帧上传
+)
+
+// PlaySpeed 播放速度
+type PlaySpeed uint8
+
+const (
+	PlaySpeedNormal PlaySpeed = iota // 正常
+	PlaySpeed1x                      // 1 倍播放速度
+	PlaySpeed2x                      // 2 倍播放速度
+	PlaySpeed4x                      // 4 倍播放速度
+	PlaySpeed8x                      // 8 倍播放速度
+	PlaySpeed16x                     // 16 倍播放速度
+)
