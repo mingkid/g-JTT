@@ -2,11 +2,6 @@ package msg
 
 import "time"
 
-const (
-	timeLayout    = "20060102150405" // 时间转换格式
-	limitlessTime = "000000000000"   // 无时间限制
-)
-
 // M9205 数据结构，表示 JT/T 1078 协议中的9205数据
 type M9205 struct {
 	LogicChannelNumber uint8               // 逻辑通道号
@@ -21,8 +16,8 @@ type M9205 struct {
 func NewM9205(chanNo uint8) *M9205 {
 	return &M9205{
 		LogicChannelNumber: chanNo,
-		RawStartTime:       limitlessTime,
-		RawEndTime:         limitlessTime,
+		RawStartTime:       LimitlessTime,
+		RawEndTime:         LimitlessTime,
 		Warn:               0,
 		AVResourceType:     0,
 		StreamType:         0,
@@ -32,43 +27,32 @@ func NewM9205(chanNo uint8) *M9205 {
 
 // StartTime 返回开始时间条件
 func (m *M9205) StartTime() time.Time {
-	return m.parseTime(m.RawStartTime)
+	return ParseTime(m.RawStartTime)
 }
 
 // EndTime 返回结束时间条件
 func (m *M9205) EndTime() time.Time {
-	return m.parseTime(m.RawEndTime)
+	return ParseTime(m.RawEndTime)
 }
 
 // SetStartTime 设置开始时间条件
 func (m *M9205) SetStartTime(t time.Time) {
-	m.RawStartTime = t.Format(timeLayout)[2:]
+	m.RawStartTime = t.Format(TimeLayout)[2:]
 }
 
 // SetEndTime 设置结束时间条件
 func (m *M9205) SetEndTime(t time.Time) {
-	m.RawEndTime = t.Format(timeLayout)[2:]
+	m.RawEndTime = t.Format(TimeLayout)[2:]
 }
 
 // ClearStartTime 清除开始时间条件
 func (m *M9205) ClearStartTime() {
-	m.RawStartTime = limitlessTime
+	m.RawStartTime = LimitlessTime
 }
 
 // ClearEndTime 清除结束时间条件
 func (m *M9205) ClearEndTime() {
-	m.RawEndTime = limitlessTime
-}
-
-func (m *M9205) parseTime(t string) time.Time {
-	if t == limitlessTime || t == "" {
-		return time.Time{}
-	}
-	if res, err := time.Parse(timeLayout, "20"+m.RawStartTime); err != nil {
-		return time.Time{}
-	} else {
-		return res
-	}
+	m.RawEndTime = LimitlessTime
 }
 
 // M9205AVResourceType 音视频资源类型
