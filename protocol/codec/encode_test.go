@@ -55,13 +55,11 @@ func TestEncodeM8100(t *testing.T) {
 
 func TestEncodeM9101(t *testing.T) {
 	var e Encoder
-	m := msg.M9101{
-		LogicalChannel: 3,
-		DataType:       msg.M9101DataTypeAudioVideo,
-		StreamType:     msg.M9101StreamTypeMain,
-	}
+	m := msg.NewM9101(3)
 	m.SetTCPAddr(net.ParseIP("192.168.0.123"), 123)
 	m.SetUDPAddr(net.ParseIP("192.168.0.123"), 456)
+	m.DataType = msg.M9101DataTypeAudioVideo
+	m.StreamType = msg.M9101StreamTypeMain
 
 	b, _ := e.Encode(m)
 
@@ -73,7 +71,7 @@ func TestEncodeM9101(t *testing.T) {
 func TestEncodeM9102(t *testing.T) {
 	var e Encoder
 	m := msg.M9102{
-		LogicChannelNumber:  1,
+		ChanNo:              1,
 		ControlDirective:    msg.M9102ControlSwitchStream,
 		CloseAudioVideoType: msg.M9102CloseAudio,
 		SwitchStreamType:    msg.M9102SwitchToSubStream,
@@ -90,9 +88,8 @@ func TestEncodeM9205(t *testing.T) {
 	var e Encoder
 	m := msg.NewM9205(4)
 	startTime, _ := time.Parse("20060102150405", "20230904000000")
-	m.SetStartTime(startTime)
 	endTime, _ := time.Parse("20060102150405", "20230904171002")
-	m.SetEndTime(endTime)
+	m.Duration = msg.NewDuration(startTime, endTime)
 	m.Warn.SetOverSpeed(true)
 	m.AVResourceType = msg.M9205AVResourceVideo
 	m.StreamType = msg.M9205StreamMain

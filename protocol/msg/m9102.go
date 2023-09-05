@@ -2,7 +2,7 @@ package msg
 
 // M9102 JT/T 1078 音视频实时传输控制
 type M9102 struct {
-	LogicChannelNumber  byte                   // 逻辑通道号
+	ChanNo              uint8                  // 逻辑通道号
 	ControlDirective    M90102ControlDirective // 控制指令
 	CloseAudioVideoType M9102CloseAVType       // 关闭音视频类型
 	SwitchStreamType    M9102SwitchStreamType  // 切换码流类型
@@ -11,7 +11,7 @@ type M9102 struct {
 type M90102ControlDirective uint8
 
 const (
-	M9102ControlCloaseAV     M90102ControlDirective = iota // 停止音视频码流
+	M9102ControlCloseAV      M90102ControlDirective = iota // 停止音视频码流
 	M9102ControlSwitchStream                               // 切换码流
 	M9102ControlPause                                      // 暂停
 	M9102ControlResume                                     // 恢复
