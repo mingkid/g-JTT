@@ -28,3 +28,13 @@ func (m *VideoCtrl) SetUDPAddr(addr net.IP, port uint16) {
 	m.SetServerIPAddr(addr)
 	m.UDPPort = port
 }
+
+// AVType 音视频资源类型
+type AVType uint8
+
+const (
+	AVTypeAV           AVType = iota // 音视频
+	AVTypeAudio                      // 音频
+	AVTypeVideo                      // 视频
+	AVTypeAudioOrVideo               // 音频或视频
+)

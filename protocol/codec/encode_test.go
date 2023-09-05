@@ -91,7 +91,7 @@ func TestEncodeM9205(t *testing.T) {
 	endTime, _ := time.Parse("20060102150405", "20230904171002")
 	m.Duration = msg.NewDuration(startTime, endTime)
 	m.Warn.SetOverSpeed(true)
-	m.AVResourceType = msg.M9205AVResourceVideo
+	m.AVType = msg.AVTypeVideo
 	m.StreamType = msg.M9205StreamMain
 	m.StorageType = msg.M9205StorageTypeMain
 
