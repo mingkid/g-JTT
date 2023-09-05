@@ -6,7 +6,7 @@ type M9205 struct {
 	Duration                            // 时间段条件
 	Warn               M9205Warn        // 报警标志
 	AVType             AVType           // 音视频资源类型
-	StreamType         M9205StreamType  // 码流类型
+	StreamType         StreamType       // 码流类型
 	StorageType        M9205StorageType // 存储器类型
 }
 
@@ -17,15 +17,6 @@ func NewM9205(chanNo uint8) *M9205 {
 		Duration:           DurationMin(),
 	}
 }
-
-// M9205StreamType 码流类型
-type M9205StreamType uint8
-
-const (
-	M9205StreamAll  M9205StreamType = iota // 所有码流
-	M9205StreamMain                        // 主码流
-	M9205StreamSub                         // 子码流
-)
 
 type M9205StorageType uint8
 

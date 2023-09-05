@@ -92,7 +92,7 @@ func TestEncodeM9205(t *testing.T) {
 	m.Duration = msg.NewDuration(startTime, endTime)
 	m.Warn.SetOverSpeed(true)
 	m.AVType = msg.AVTypeVideo
-	m.StreamType = msg.M9205StreamMain
+	m.StreamType = msg.StreamTypeMain
 	m.StorageType = msg.M9205StorageTypeMain
 
 	b, _ := e.Encode(m)

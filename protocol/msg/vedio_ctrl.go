@@ -38,3 +38,12 @@ const (
 	AVTypeVideo                      // 视频
 	AVTypeAudioOrVideo               // 音频或视频
 )
+
+// StreamType 码流类型
+type StreamType uint8
+
+const (
+	StreamTypeAll  StreamType = iota // 所有码流
+	StreamTypeMain                   // 主码流
+	StreamTypeSub                    // 子码流
+)
