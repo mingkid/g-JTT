@@ -29,7 +29,7 @@ func Unescape(b []byte) (res []byte) {
 	return
 }
 
-// Escape 返回
+// Escape 返回转以后的数据包，不影响原始数据包
 func Escape(b []byte) (res []byte) {
 	str := hex.EncodeToString(b)
 

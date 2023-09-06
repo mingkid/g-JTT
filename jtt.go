@@ -54,10 +54,10 @@ func (e *Engine) Serve(ip string, port uint) error {
 		// 创建连接对象
 		rawConn, err := listener.Accept()
 		if err != nil {
-			fmt.Printf("[JTT] %s | %s |终端连接异常 \n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr(), err.Error())
+			fmt.Printf("[JTT] %s | %s | 终端连接异常 \n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr(), err.Error())
 			continue
 		}
-		fmt.Printf("[JTT] %s | %s |终端已连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr())
+		fmt.Printf("[JTT] %s | %s | 终端已连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), rawConn.RemoteAddr())
 
 		go e.handleConnection(rawConn)
 	}
@@ -71,8 +71,15 @@ func (e *Engine) handleConnection(rawConn net.Conn) {
 	c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
 	defer func() {
-		_ = rawConn.Close()
+		// 预防上下文创建的过程中异常导致上下文未创建就退出方法
+		if ctx == nil {
+			return
+		}
+
 		e.connPool.Remove(ctx.termID)
+		if err = rawConn.Close(); err != nil {
+			return
+		}
 	}()
 
 	for {
