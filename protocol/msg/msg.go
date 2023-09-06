@@ -7,45 +7,39 @@ import (
 
 type MsgID uint16
 
+func (id MsgID) String() string {
+	return fmt.Sprintf("%04x", id)
+}
+
 const (
-	// MsgIDTermCommResp 终端通用应答
-	MsgIDTermCommResp MsgID = 0x0001
-
-	// MsgIDTermRegister 终端注册
-	MsgIDTermRegister = 0x0100
-
-	// MsgIDTermRegResp 终端注册应答
-	MsgIDTermRegResp = 0x8100
-
-	// MsgIDTermLocationReport 终端位置汇报
-	MsgIDTermLocationReport = 0x0200
-
-	// MsgIDTermLocationBatch 终端位置批量上传
-	MsgIDTermLocationBatch = 0x0704
-
-	// MsgIDTermAuth 终端鉴权
-	MsgIDTermAuth = 0x0102
-
-	// MsgIDPlatformCommResp 平台通用应答
-	MsgIDPlatformCommResp MsgID = 0x8001
-
-	// MsgIDTermHeartbeat 终端心跳
-	MsgIDTermHeartbeat MsgID = 0x0002
+	MsgIDTermCommResp       MsgID = 0x0001 // 终端通用应答
+	MsgIDTermRegister       MsgID = 0x0100 // 终端注册
+	MsgIDTermRegResp        MsgID = 0x8100 // 终端注册应答
+	MsgIDTermLocationReport MsgID = 0x0200 // 终端位置汇报
+	MsgIDTermLocationBatch  MsgID = 0x0704 // 终端位置批量上传
+	MsgIDTermAuth           MsgID = 0x0102 // 终端鉴权
+	MsgIDPlatformCommResp   MsgID = 0x8001 // 平台通用应答
+	MsgIDTermHeartbeat      MsgID = 0x0002 // 终端心跳
+	MsgIDRealtimePlay       MsgID = 0x9101 // 实时音视频传输请求
+	MsgIDRealtimePlayCtrl   MsgID = 0x9102 // 实时音视频传输控制
+	MsgIDRealtimePlayStatus MsgID = 0x9105 // 实时音视频传输状态
+	MsgIDPlayback           MsgID = 0x9201 // 远程录像回放
+	MsgIDPlaybackCtrl       MsgID = 0x9202 // 远程录像回放控制
+	MsgIDPlaybackList       MsgID = 0x9205 // 查询远程录像资源列表
 )
 
 const MsgBodyMaxLength = 0x03ff
 
-// Msg 消息
-type Msg[TBody any] struct {
+// MsgWith 消息
+type MsgWith[TBody any] struct {
 	Head
 	Body TBody
 }
 
-// New 返回新的消息对象
-func New[TBody any]() *Msg[TBody] {
-	return &Msg[TBody]{
-		Body: *new(TBody),
-	}
+// Msg 消息
+type Msg struct {
+	Head
+	Body interface{}
 }
 
 // Head 消息头
