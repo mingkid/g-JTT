@@ -9,10 +9,12 @@ import (
 	"github.com/mingkid/g-jtt/protocol/bin"
 )
 
+// FieldDecoder 字段解码器
 type FieldDecoder interface {
 	Decode() error
 }
 
+// NumericFieldDecoder  数字字段解码器
 type NumericFieldDecoder struct {
 	fv       *reflect.Value
 	readFunc func() (uint64, error)
@@ -27,6 +29,7 @@ func (d *NumericFieldDecoder) Decode() error {
 	return nil
 }
 
+// SliceFieldDecoder 切片字段解码器
 type SliceFieldDecoder struct {
 	fv     *reflect.Value
 	r      *bin.Reader
@@ -59,6 +62,7 @@ func (d *SliceFieldDecoder) Decode() error {
 	return nil
 }
 
+// MapFieldDecoder  字典字段解码器
 type MapFieldDecoder struct {
 	f  reflect.StructField
 	fv *reflect.Value
@@ -92,41 +96,56 @@ func (d *MapFieldDecoder) Decode() error {
 	return nil
 }
 
+// StringFieldDecoder  字符串字段解码器
 type StringFieldDecoder struct {
-	fv     *reflect.Value
-	r      *bin.Reader
-	tagVal string
+	fv      *reflect.Value
+	r       *bin.Reader
+	tagVal  string
+	globVar map[string]uint
 }
 
 func (d *StringFieldDecoder) Decode() error {
 	if d.tagVal == "" {
-		// Read remaining data and convert to string
-		val, err := d.r.ReadStringAll()
-		if err != nil {
-			return err
-		}
-		d.fv.SetString(val)
-	} else {
-		if bcdLength := extractBCDLength(d.tagVal); bcdLength > 0 {
-			val, err := d.r.ReadBCD(bcdLength)
-			if err != nil {
-				return err
-			}
-			d.fv.SetString(val)
-		} else {
-			// Read specified size of data
-			size, _ := strconv.Atoi(d.tagVal)
-			val, err := d.r.ReadString(size)
-			if err != nil {
-				return err
-			}
-			d.fv.SetString(val)
-		}
+		return d.remainingDecode()
 	}
+	if bcdLength := extractBCDLength(d.tagVal); bcdLength > 0 {
+		return d.bcdDecode(bcdLength)
+	}
+	return d.sizeDecode()
+}
+
+// sizeDecode 解码指定长度的字符串
+func (d *StringFieldDecoder) sizeDecode() error {
+	size, _ := strconv.Atoi(d.tagVal)
+	val, err := d.r.ReadString(size)
+	if err != nil {
+		return err
+	}
+	d.fv.SetString(val)
 	return nil
 }
 
-func NewFiledDecoder(f reflect.StructField, fv *reflect.Value, tagVal string, r *bin.Reader) (FieldDecoder, error) {
+// bcdDecode 解码BCD编码的字符串
+func (d *StringFieldDecoder) bcdDecode(bcdLength int) error {
+	val, err := d.r.ReadBCD(bcdLength)
+	if err != nil {
+		return err
+	}
+	d.fv.SetString(val)
+	return nil
+}
+
+// remainingDecode 读取剩余数据
+func (d *StringFieldDecoder) remainingDecode() error {
+	val, err := d.r.ReadStringAll()
+	if err != nil {
+		return err
+	}
+	d.fv.SetString(val)
+	return nil
+}
+
+func NewFiledDecoder(f reflect.StructField, fv *reflect.Value, tagVal string, r *bin.Reader, globVar map[string]uint) (FieldDecoder, error) {
 	switch fv.Kind() {
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
 		d := &NumericFieldDecoder{fv: fv}
@@ -174,9 +193,10 @@ func NewFiledDecoder(f reflect.StructField, fv *reflect.Value, tagVal string, r 
 
 	case reflect.String:
 		return &StringFieldDecoder{
-			fv:     fv,
-			r:      r,
-			tagVal: tagVal,
+			fv:      fv,
+			r:       r,
+			tagVal:  tagVal,
+			globVar: globVar,
 		}, nil
 
 	default:
