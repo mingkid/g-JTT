@@ -7,7 +7,7 @@ import (
 
 type MsgID uint16
 
-func (id MsgID) String() string {
+func (id MsgID) Hex() string {
 	return fmt.Sprintf("%04x", id)
 }
 
