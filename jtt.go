@@ -63,6 +63,31 @@ func (e *Engine) Serve(ip string, port uint) error {
 	}
 }
 
+// Send 下发指令
+func (e *Engine) Send(m msg.Msg) error {
+	b, err := packaging(m)
+	if err != nil {
+		return err
+	}
+
+	return e.SendBytes(m.Head.Phone, b)
+}
+
+// SendBytes 下发二进制数据指令
+func (e *Engine) SendBytes(phone string, b []byte) error {
+	termID, err := e.PhoneToTermID(phone)
+	if err != nil {
+		return err
+	}
+
+	c, hasConn := e.connPool.Get(termID)
+	if !hasConn {
+		return newDeviceoffline(termID)
+	}
+
+	return c.Send(b)
+}
+
 func (e *Engine) handleConnection(rawConn net.Conn) {
 	var (
 		ctx *Context
@@ -117,7 +142,12 @@ func (e *Engine) processMessage(ctx *Context) (err error) {
 
 	// 补充上下文信息
 	ctx.head = msgHead
-	if ctx.termID, err = e.PhoneToTermID(ctx); err != nil {
+	if ctx.termID, err = e.PhoneToTermID(ctx.Head().Phone); err != nil {
+		if ctx.Head().MsgID == msg.MsgIDTermRegister {
+			_ = ctx.Register(msg.M8100ResultCarNotInDB, "")
+		} else {
+			_ = ctx.Generic(msg.M8001ResultFail)
+		}
 		return errors.New(fmt.Sprintf("终端手机[%s]转终端 ID 错误: %s", msgHead.Phone, err.Error()))
 	}
 
@@ -150,14 +180,14 @@ func (e *Engine) checkServeRequirement() error {
 }
 
 type HandleFunc func(ctx *Context)
-type PhoneToTermID func(ctx *Context) (termID string, err error)
+type PhoneToTermID func(phone string) (termID string, err error)
 
 // DefaultPhoneToTermID 默认手机号码转终端 ID 控制器函数
-var DefaultPhoneToTermID = func(ctx *Context) (termID string, err error) {
-	if ctx.Head().Phone == "" {
-		return "", errors.New("")
+var DefaultPhoneToTermID = func(phone string) (termID string, err error) {
+	if phone == "" {
+		return "", errors.New("手机（SIM 卡）号码不能为空")
 	}
-	return ctx.Head().Phone, nil
+	return phone, nil
 }
 
 // DefaultUnknownMsgHandle 默认未知消息处理控制器函数
@@ -168,4 +198,29 @@ var DefaultUnknownMsgHandle = func(ctx *Context) {
 	} else {
 		_ = ctx.Generic(msg.M8001ResultFail)
 	}
+}
+
+// DeviceOffline  设备离线
+type DeviceOfflineError struct {
+	termID string
+}
+
+// TermID  终端 ID
+func (e DeviceOfflineError) TermID() string {
+	return e.termID
+}
+
+func newDeviceoffline(phone string) DeviceOfflineError {
+	return DeviceOfflineError{
+		termID: phone,
+	}
+}
+
+func (e DeviceOfflineError) Error() string {
+	return fmt.Sprintf("终端[%s]离线，消息发送失败", e.termID)
+}
+
+func (e DeviceOfflineError) Is(target error) bool {
+	_, ok := target.(DeviceOfflineError)
+	return ok
 }
