@@ -30,16 +30,10 @@ const (
 
 const MsgBodyMaxLength = 0x03ff
 
-// MsgWith 消息
-type MsgWith[TBody any] struct {
+// Msg 消息
+type Msg[TBody any] struct {
 	Head
 	Body TBody
-}
-
-// Msg 消息
-type Msg struct {
-	Head
-	Body interface{}
 }
 
 // Head 消息头

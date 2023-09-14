@@ -12,7 +12,7 @@ import (
 
 func TestEncodeM8001(t *testing.T) {
 	var e Encoder
-	m := msg.MsgWith[msg.M8001]{
+	m := msg.Msg[msg.M8001]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDPlatformCommResp,
 			Phone: "13680179679",
@@ -34,7 +34,7 @@ func TestEncodeM8001(t *testing.T) {
 
 func TestEncodeM8100(t *testing.T) {
 	var e Encoder
-	m := msg.MsgWith[msg.M8100]{
+	m := msg.Msg[msg.M8100]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDTermRegResp,
 			Phone: "13680179679",

@@ -10,7 +10,6 @@ import (
 
 	"github.com/mingkid/g-jtt/conn"
 	"github.com/mingkid/g-jtt/protocol/bin"
-	"github.com/mingkid/g-jtt/protocol/codec"
 	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
@@ -69,7 +68,7 @@ func (ctx *Context) RemoteAddr() net.Addr {
 
 // Generic 返回平台通用响应
 func (ctx *Context) Generic(res msg.M8001Result) error {
-	m := msg.Msg{
+	m := msg.Msg[msg.M8001]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDPlatformCommResp,
 			Phone: ctx.head.Phone,
@@ -81,7 +80,7 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 		},
 	}
 
-	b, err := packaging(m)
+	b, err := packaging(&m)
 	if err != nil {
 		return err
 	}
@@ -93,7 +92,7 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 
 // Register 返回终端注册响应
 func (ctx *Context) Register(res msg.M8100Result, token string) error {
-	m := msg.Msg{
+	m := msg.Msg[msg.M8100]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDTermRegResp,
 			Phone: ctx.head.Phone,
@@ -105,7 +104,7 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 		},
 	}
 
-	b, err := packaging(m)
+	b, err := packaging[msg.M8100](&m)
 	if err != nil {
 		return err
 	}
@@ -113,38 +112,4 @@ func (ctx *Context) Register(res msg.M8100Result, token string) error {
 	err = ctx.c.Send(b)
 	fmt.Printf("[JTT] %s | %s | 发送消息\n%s\n", time.Now().Format("2006/01/02 - 15:04:05"), ctx.RemoteAddr(), hex.EncodeToString(b))
 	return err
-}
-
-// packaging 封装
-func packaging(m msg.Msg) ([]byte, error) {
-	// 计算消息体长度
-	if err := calcBodyLength(&m); err != nil {
-		return nil, err
-	}
-
-	// 编码
-	e := new(codec.Encoder)
-	b, err := e.Encode(m)
-	if err != nil {
-		return nil, err
-	}
-
-	// 填充校验码
-	b = append(b, bin.Checksum(b))
-
-	//  转义
-	b = bin.Escape(b)
-	return b, nil
-}
-
-// calcBodyLength 计算消息体长度
-func calcBodyLength(m *msg.Msg) error {
-	size, err := bin.CalculateMsgLength(m.Body)
-	if err != nil {
-		return err
-	}
-	if err = m.Head.SetBodyLength(size); err != nil {
-		return err
-	}
-	return nil
 }

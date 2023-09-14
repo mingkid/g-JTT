@@ -63,31 +63,6 @@ func (e *Engine) Serve(ip string, port uint) error {
 	}
 }
 
-// Send 下发指令
-func (e *Engine) Send(m msg.Msg) error {
-	b, err := packaging(m)
-	if err != nil {
-		return err
-	}
-
-	return e.SendBytes(m.Head.Phone, b)
-}
-
-// SendBytes 下发二进制数据指令
-func (e *Engine) SendBytes(phone string, b []byte) error {
-	termID, err := e.PhoneToTermID(phone)
-	if err != nil {
-		return err
-	}
-
-	c, hasConn := e.connPool.Get(termID)
-	if !hasConn {
-		return newDeviceoffline(termID)
-	}
-
-	return c.Send(b)
-}
-
 func (e *Engine) handleConnection(rawConn net.Conn) {
 	var (
 		ctx *Context

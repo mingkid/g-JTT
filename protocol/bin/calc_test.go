@@ -7,7 +7,7 @@ import (
 )
 
 func TestCalculateMsgLength(t *testing.T) {
-	m := new(msg.MsgWith[msg.M0100])
+	m := new(msg.Msg[msg.M0100])
 	m.Body.ProvincialID = 42
 	m.Body.CityID = 2130
 	m.Body.ManufacturerID = "12345"
