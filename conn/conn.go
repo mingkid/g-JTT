@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"errors"
 	"net"
 	"sync"
 	"time"
@@ -53,6 +54,9 @@ func (c *Connection) SetExpirationByTimestamp(timestamp int64) {
 
 // Receive 接收数据
 func (c *Connection) Receive() ([]byte, error) {
+	if c.IsExpired() {
+		return nil, errors.New("连接已过期")
+	}
 	b := make([]byte, 1024)
 	n, err := c.conn.Read(b)
 	return b[:n], err
@@ -60,10 +64,18 @@ func (c *Connection) Receive() ([]byte, error) {
 
 // Send 发送数据
 func (c *Connection) Send(b []byte) error {
+	if c.IsExpired() {
+		return errors.New("连接已过期")
+	}
 	if _, err := c.conn.Write(b); err != nil {
 		return err
 	}
 	return nil
+}
+
+// Close 关闭连接
+func (c *Connection) Close() error {
+	return c.conn.Close()
 }
 
 // RemoteAddr 返回远程网络地址（如果知道）

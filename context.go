@@ -35,7 +35,9 @@ func NewContext(c *conn.Connection) (*Context, error) {
 
 	// 转义还原，验证校验码，删除校验位
 	data := bin.Unescape(rawData)
-	if err = bin.Verify(data[:len(data)-1], data[len(data)-1]); err != nil {
+	b := data[:len(data)-1]
+	checkSum := data[len(data)-1]
+	if err = bin.Verify(b, checkSum); err != nil {
 		return nil, errors.New(fmt.Sprintf("创建上下文异常: %s", err.Error()))
 	}
 	data = data[:len(data)-1]

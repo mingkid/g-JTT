@@ -71,15 +71,17 @@ func (e *Engine) handleConnection(rawConn net.Conn) {
 	c := conn.NewConnection(rawConn, time.Now().Add(time.Minute))
 
 	defer func() {
-		// 预防上下文创建的过程中异常导致上下文未创建就退出方法
-		if ctx == nil {
-			return
+		// 断开连接
+		if ctx != nil {
+			// 预防上下文创建的过程中异常导致上下文未创建就退出方法
+			e.connPool.Remove(ctx.termID)
+			if err = c.Close(); err != nil {
+				return
+			}
+		} else {
+			_ = rawConn.Close()
 		}
-
-		e.connPool.Remove(ctx.termID)
-		if err = rawConn.Close(); err != nil {
-			return
-		}
+		fmt.Printf("[JTT] %s | %s | 终端已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
 	}()
 
 	for {
@@ -87,11 +89,10 @@ func (e *Engine) handleConnection(rawConn net.Conn) {
 		ctx, err = NewContext(c)
 		if err != nil {
 			if err == io.EOF {
-				fmt.Printf("[JTT] %s | %s | 终端已断开连接！ \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr())
 				break
 			}
 			fmt.Printf("[JTT] %s | %s | %s \n", time.Now().Format("2006/01/02 - 15:04:05"), c.RemoteAddr(), err.Error())
-			continue
+			break
 		}
 
 		// 终端消息处理
@@ -138,10 +139,13 @@ func (e *Engine) processMessage(ctx *Context) (err error) {
 	return
 }
 
-func (e *Engine) connPoolUpdate(termID string, c *conn.Connection) {
-	if _, ok := e.connPool.Get(termID); !ok {
-		e.connPool.Add(termID, c)
+func (e *Engine) connPoolUpdate(termID string, newC *conn.Connection) {
+	c, ok := e.connPool.Get(termID)
+	if !ok {
+		e.connPool.Add(termID, newC)
+		return
 	}
+	c.SetExpirationByDuration(time.Minute)
 }
 
 func (e *Engine) checkServeRequirement() error {
