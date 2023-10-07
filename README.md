@@ -23,8 +23,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/mingkid/g-JTT/protocol/codec"
-	"github.com/mingkid/g-JTT/protocol/msg"
+	jtt "github.com/mingkid/g-jtt"
+	"github.com/mingkid/g-jtt/protocol/codec"
+	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
 func main() {
@@ -35,15 +36,18 @@ func main() {
 	engine.RegisterHandler(msg.MsgID(0x0200), handleMessage)
 
 	// Start the communication server
-	_ = engine.Serve(":8080")
+	_ = engine.Serve("", 9300)
 }
 
 func handleMessage(ctx *jtt.Context) {
-	var decoder codec.Decoder
-	m := msg.New[msg.M0200]()
+	var (
+		m msg.Msg[msg.M0200]
+		d codec.Decoder
+	)
 
-	decoder.Decode(m, ctx.Data())
+	d.Decode(m, ctx.Data())
 	fmt.Printf("Hello, %s", msg.Head.Phone)
+	_ = ctx.Generic(msg.M8001ResultSuccess)
 }
 ```
 
@@ -79,14 +83,14 @@ When using tag rules, pay attention to the applicable field types and the effect
 
 In the JTT series protocols, there is a mapping relationship between raw data types and Go data types. Here are some examples of the mapping relationships:
 
-|   JTT Data Type   | Go Data Type |            Description and Requirements           |
-| ----------------- |--------------| --------------------------------------------- |
-| BYTE              | uint8        | Unsigned 8-bit integer (byte, 8 bits)         |
-| WORD              | uint16       | Unsigned 16-bit integer (word, 16 bits)       |
-| DWORD             | uint32       | Unsigned 32-bit integer (dword, 32 bits)      |
-| BYTE[n]           | [n]byte      | n bytes                                      |
-| BCD(n)            | string       | BCD encoding, n bytes                        |
-| STRING            | string       | GBK encoded, empty if no data                |
+| JTT Data Type | Go Data Type |            Description and Requirements           |
+|---------------|--------------| --------------------------------------------- |
+| BYTE          | uint8        | Unsigned 8-bit integer (byte, 8 bits)         |
+| WORD          | uint16       | Unsigned 16-bit integer (word, 16 bits)       |
+| DWORD         | uint32       | Unsigned 32-bit integer (dword, 32 bits)      |
+| BYTE[n]       | [n]byte      | n bytes                                      |
+| BCD(n)        | string       | BCD encoding, n bytes                        |
+| STRING        | string       | GBK encoded, empty if no data                |
 
 These mapping relationships can guide the use of the correct Go data types to handle different fields during the decoding and encoding processes.
 

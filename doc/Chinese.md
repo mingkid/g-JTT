@@ -22,7 +22,8 @@ package main
 
 import (
 	"fmt"
-	
+
+	jtt "github.com/mingkid/g-jtt"
 	"github.com/mingkid/g-JTT/protocol/codec"
 	"github.com/mingkid/g-JTT/protocol/msg"
 )
@@ -35,15 +36,18 @@ func main() {
 	engine.RegisterHandler(msg.MsgID(0x0200), handleMessage)
 
 	// Start the communication server
-	_ = engine.Serve(":8080")
+	_ = engine.Serve("", 9300)
 }
 
 func handleMessage(ctx *jtt.Context) {
-	var decoder codec.Decoder
-	m := msg.New[msg.M0200]()
+	var (
+		m msg.Msg[msg.M0200]
+		d codec.Decoder
+	)
 
-	decoder.Decode(m, ctx.Data())
+	d.Decode(m, ctx.Data())
 	fmt.Printf("Hello, %s", msg.Head.Phone)
+	_ = ctx.Generic(msg.M8001ResultSuccess)
 }
 ```
 
@@ -62,16 +66,16 @@ func handleMessage(ctx *jtt.Context) {
 
 标签规则是项目中用于指导解码和编码的关键元素。下面是一张表格，展示了标签规则的使用情况、适用的字段类型以及规则的效果：
 
-| 标签规则               | 适用字段类型                             | 解码器支持 | 编码器支持 | 效果                  |
-|------------------------|------------------------------------|----------|----------|---------------------|
-| `jtt[版本号]:"-"`       | 任意类型                               | 支持     | 支持     | 跳过字段                |
-| `jtt[版本号]:"raw,长度"` | `[]byte` 类型                        | 支持     | 支持     | 按长度读取指定位数数据         |
-| `jtt[版本号]:"bcd,长度"` | `string` 类型                        | 支持     | 支持     | 读取BCD编码数据           |
-| `jtt[版本号]:"长度"`     | `string` 类型                        | 支持     | 支持     | 按长度读取数据             |
-| 无标签                 | `string` 类型                        | 支持     | 支持     | 读取剩余数据              |
-| 无标签                 | `[]byte` 类型                        | 支持     | 支持     | 读取剩余数据              |
-| 无标签                 | `uint8`、`uint16`、`uint32`、`string` | 支持     | 支持     | 按类型读取数据             |
-| 无标签                    | `map[uint8][]byte` 类型               | 支持     | 支持     | 读取和解码 map 键值对       |
+| 标签规则               | 适用字段类型                    | 解码器支持 | 编码器支持 | 效果              |
+|------------------------|---------------------------|----------|----------|-----------------|
+| `jtt[版本号]:"-"`       | 任意类型                      | 支持     | 支持     | 跳过字段            |
+| `jtt[版本号]:"raw,长度"` | `[]byte` 类型               | 支持     | 支持     | 按长度读取指定位数数据     |
+| `jtt[版本号]:"bcd,长度"` | `string` 类型               | 支持     | 支持     | 读取 BCD 编码数据     |
+| `jtt[版本号]:"长度"`     | `string` 类型               | 支持     | 支持     | 按长度读取数据         |
+| 无标签                 | `string` 类型               | 支持     | 支持     | 按照 GBK 编码读取剩余数据 |
+| 无标签                 | `[]byte` 类型               | 支持     | 支持     | 读取剩余数据          |
+| 无标签                 | `uint8`、`uint16`、`uint32` | 支持     | 支持     | 按类型读取数据         |
+| 无标签                    | `map[uint8][]byte` 类型     | 支持     | 支持     | 读取和解码 map 键值对   |
 
 在使用标签规则时，请注意适用的字段类型和规则的效果。这些标签将指导解码和编码过程，确保数据能够正确地传输和转换。
 
