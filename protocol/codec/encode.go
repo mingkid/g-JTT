@@ -62,8 +62,8 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 			}
 
 		case reflect.String:
-			if strings.HasPrefix(tagValue, BCD) {
-				// BCD 编码
+			if strings.HasPrefix(tagValue, CodecTypeBCD.String()) {
+				// CodecTypeBCD 编码
 				parts := strings.Split(tagValue, ",")
 				length, _ := strconv.Atoi(parts[1])
 				err := writer.WriteBCD(fieldValue.String(), length)
@@ -98,7 +98,7 @@ func (e *Encoder) encodeStruct(structValue reflect.Value, writer *bin.Writer) er
 			}
 
 		default:
-			return fmt.Errorf("unsupported field type: %v", fieldValue.Type().Kind())
+			return fmt.Errorf("编码过程不支持%s类型的字段%s", fieldValue.Type().Kind().String(), fieldType.Name)
 		}
 	}
 

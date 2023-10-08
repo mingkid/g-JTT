@@ -3,8 +3,6 @@ package codec
 import (
 	"errors"
 	"reflect"
-	"strconv"
-	"strings"
 
 	"github.com/mingkid/g-jtt/protocol/bin"
 )
@@ -51,34 +49,14 @@ func (d *Decoder) decodeStruct(msgType reflect.Type, msgValue *reflect.Value, re
 			continue
 		}
 
-		fieldDecoder, err := NewFiledDecoder(fieldType, &fieldValue, tagValue, reader)
+		fieldDecoder, err := NewFiledDecoder(fieldType, &fieldValue, tagValue, reader, d.variable)
 		if err != nil {
 			return err
 		}
 		if err = fieldDecoder.Decode(); err != nil {
-			return err
+			return newFieldDecodeError(fieldType.Name, err.Error())
 		}
 	}
 
 	return nil
 }
-
-func extractBCDLength(tagValue string) int {
-	if parts := splitTag(tagValue); len(parts) == 2 && parts[0] == BCD {
-		length, _ := strconv.Atoi(parts[1])
-		return length
-	}
-	return 0
-}
-
-func splitTag(tagValue string) []string {
-	return strings.Split(tagValue, ",")
-}
-
-const (
-	Ignore = "-"
-	BCD    = "bcd"
-	Raw    = "raw"
-	Var    = "var"
-	UseVar = "$"
-)

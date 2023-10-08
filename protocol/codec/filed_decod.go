@@ -1,10 +1,12 @@
 package codec
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/mingkid/g-jtt/protocol/bin"
 )
@@ -49,13 +51,15 @@ func (d *SliceFieldDecoder) Decode() error {
 			return err
 		}
 	} else {
-		if parts := splitTag(d.tagVal); len(parts) == 2 && parts[0] == Raw {
-			size, _ := strconv.Atoi(parts[1])
-			val, err = d.r.ReadBytes(size)
+		decodeType, length, err := extractLength(d.tagVal)
+		if err != nil {
+			return err
+		}
+		if decodeType == CodecTypeRaw {
+			val, err = d.r.ReadBytes(length)
 			if err != nil {
 				return err
 			}
-			d.fv.SetBytes(val)
 		}
 	}
 	d.fv.SetBytes(val)
@@ -108,9 +112,13 @@ func (d *StringFieldDecoder) Decode() error {
 	if d.tagVal == "" {
 		return d.remainingDecode()
 	}
-	if bcdLength := extractBCDLength(d.tagVal); bcdLength > 0 {
-		return d.bcdDecode(bcdLength)
+	decodeType, length, err := extractLength(d.tagVal)
+	if err == nil {
+		if decodeType == CodecTypeBCD {
+			return d.bcdDecode(length)
+		}
 	}
+
 	return d.sizeDecode()
 }
 
@@ -170,7 +178,7 @@ func NewFiledDecoder(f reflect.StructField, fv *reflect.Value, tagVal string, r 
 
 	case reflect.Slice:
 		if f.Type.Elem().Kind() != reflect.Uint8 {
-			return nil, FiledCantDecodeError{s: fmt.Sprintf("不支持的数据类型 %s []%s", f.Name, f.Type.Elem().Kind().String())}
+			return nil, newFieldDecodeError(f.Name, fmt.Sprintf("不支持的数据类型 %s", f.Type.Elem().Kind().String()))
 		}
 		return &SliceFieldDecoder{
 			fv:     fv,
@@ -204,11 +212,31 @@ func NewFiledDecoder(f reflect.StructField, fv *reflect.Value, tagVal string, r 
 	}
 }
 
-// FiledCantDecodeError 字段解码异常
-type FiledCantDecodeError struct {
-	s string
+func extractLength(tagValue string) (CodecType, int, error) {
+	parts := strings.Split(tagValue, ",")
+	if len(parts) != 2 {
+		return "", 0, errors.New("没有可提取的长度信息")
+	}
+	length, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return "", 0, errors.New("没有可提取的长度信息")
+	}
+	return CodecType(parts[0]), length, err
 }
 
-func (e FiledCantDecodeError) Error() string {
-	return e.s
+// fieldDecodeError 字段解码异常
+type fieldDecodeError struct {
+	s         string
+	fieldName string
+}
+
+func newFieldDecodeError(filedName, text string) fieldDecodeError {
+	return fieldDecodeError{
+		s:         text,
+		fieldName: filedName,
+	}
+}
+
+func (err fieldDecodeError) Error() string {
+	return fmt.Sprintf("%s 字段解码异常: %s", err.fieldName, err.s)
 }
