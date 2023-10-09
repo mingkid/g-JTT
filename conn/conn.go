@@ -100,6 +100,15 @@ func (c *Connection) Register(res msg.M8100Result) {
 	}
 }
 
+// Auth 终端鉴权
+func (c *Connection) Auth(res msg.M8001Result) {
+	if res == msg.M8001ResultSuccess {
+		c.status = ConnStatusOnline
+	} else {
+		c.status = ConnStatusToAuth
+	}
+}
+
 // ConnStatus 终端状态
 type ConnStatus uint8
 

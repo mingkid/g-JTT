@@ -92,6 +92,12 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 	return err
 }
 
+// Auth 返回终端鉴权响应
+func (ctx *Context) Auth(res msg.M8001Result) error {
+	ctx.c.Auth(res)
+	return ctx.Generic(res)
+}
+
 // Register 返回终端注册响应
 func (ctx *Context) Register(res msg.M8100Result, token string) error {
 	ctx.c.Register(res)
