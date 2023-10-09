@@ -94,6 +94,8 @@ func (ctx *Context) Generic(res msg.M8001Result) error {
 
 // Register 返回终端注册响应
 func (ctx *Context) Register(res msg.M8100Result, token string) error {
+	ctx.c.Register(res)
+
 	m := msg.Msg[msg.M8100]{
 		Head: msg.Head{
 			MsgID: msg.MsgIDTermRegResp,

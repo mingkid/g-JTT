@@ -5,10 +5,13 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"github.com/mingkid/g-jtt/protocol/msg"
 )
 
 type Connection struct {
 	conn       net.Conn
+	status     ConnStatus
 	expiration time.Time
 	mu         sync.Mutex // Mutex for concurrent access
 }
@@ -18,6 +21,11 @@ func NewConnection(conn net.Conn, expiration time.Time) *Connection {
 		conn:       conn,
 		expiration: expiration,
 	}
+}
+
+// Status 连接状态
+func (c *Connection) Status() ConnStatus {
+	return c.status
 }
 
 // IsExpired 返回是否过期
@@ -82,3 +90,22 @@ func (c *Connection) Close() error {
 func (c *Connection) RemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
 }
+
+// Register 终端注册
+func (c *Connection) Register(res msg.M8100Result) {
+	if res == msg.M8100ResultSuccess {
+		c.status = ConnStatusToAuth
+	} else {
+		c.status = ConnStatusToRegister
+	}
+}
+
+// ConnStatus 终端状态
+type ConnStatus uint8
+
+const (
+	ConnStatusUnConnected ConnStatus = iota // 未连接
+	ConnStatusToRegister                    // 注册中
+	ConnStatusToAuth                        // 鉴权中
+	ConnStatusOnline                        // 在线
+)
