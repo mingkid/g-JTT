@@ -63,6 +63,11 @@ func (e *Engine) Serve(ip string, port uint) error {
 	}
 }
 
+func (e *Engine) GetConn(termID string) *conn.Connection {
+	c, _ := e.connPool.Get(termID)
+	return c
+}
+
 func (e *Engine) handleConnection(rawConn net.Conn) {
 	var (
 		ctx *Context
