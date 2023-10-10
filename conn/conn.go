@@ -83,6 +83,7 @@ func (c *Connection) Send(b []byte) error {
 
 // Close 关闭连接
 func (c *Connection) Close() error {
+	c.status = ConnStatusUnConnected
 	return c.conn.Close()
 }
 
